@@ -161,6 +161,26 @@
                             <p class="text-xs text-slate-500 dark:text-slate-400">You must paste questions here to start
                                 a session.</p>
                         </div>
+                        
+                        <!-- Important Formatting Note -->
+                        <div class="mb-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded-lg p-3 flex gap-3 shadow-sm transition-all text-left">
+                            <div class="text-amber-500 dark:text-amber-400 shrink-0 mt-0.5"><i class="ph-fill ph-info text-xl"></i></div>
+                            <div>
+                                <div class="font-semibold text-amber-800 dark:text-amber-300 text-sm mb-0.5">Chú ý (Note)</div>
+                                <div class="text-amber-700/90 dark:text-amber-400/90 text-xs sm:text-sm leading-relaxed">
+                                    Để đảm bảo bài thi hiển thị đúng, vui lòng sử dụng AI trợ lý để định dạng câu hỏi trước khi dán vào đây.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Format Questions Button -->
+                        <div class="mb-4">
+                            <a href="https://gemini.google.com/gem/1hxX-AAspjtZr3wYTJZLDL9wCZC-AtnWE?usp=sharing" target="_blank" rel="noopener noreferrer" 
+                               class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 dark:from-blue-500 dark:to-indigo-500 dark:hover:from-blue-600 dark:hover:to-indigo-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-all shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/40 hover:-translate-y-0.5">
+                                <i class="ph-fill ph-sparkle text-lg"></i>
+                                Format Questions with Gemini AI
+                            </a>
+                        </div>
                         <textarea id="import-text"
                             class="w-full h-32 rounded-lg border border-slate-200 dark:border-slate-700 p-3 text-sm text-slate-700 dark:text-slate-200 bg-white/70 dark:bg-slate-800/70 focus:outline-none focus:ring-2 focus:ring-blue-500/50 mb-3 custom-scrollbar"
                             placeholder="Câu 1: 1+1=?&#10;A. 1 /B. 2 C. 3 D. 4"></textarea>
