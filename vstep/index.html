@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 
 <head>
     <meta charset="UTF-8">
@@ -37,6 +37,7 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <!-- Custom CSS -->
     <link rel="stylesheet" href="styles.css">
+
 </head>
 
 <body
@@ -53,11 +54,7 @@
             style="animation-delay: 4s;"></div>
     </div>
 
-    <!-- Theme Switcher -->
-    <button id="theme-toggle"
-        class="fixed top-4 right-4 z-50 w-10 h-10 md:w-12 md:h-12 rounded-full glass-card flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-white/40 dark:hover:bg-slate-800/40 transition-colors shadow-sm cursor-pointer">
-        <i id="theme-toggle-icon" class="ph ph-moon text-xl md:text-2xl"></i>
-    </button>
+
 
     <!-- Main Content Container -->
     <main class="relative z-10 w-full max-w-5xl mx-auto px-4 py-8 md:py-12 flex-grow flex flex-col items-center">
@@ -153,6 +150,21 @@
                         </label>
                     </div>
 
+                    <!-- Learning Mode Toggle -->
+                    <div
+                        class="flex items-center justify-between pt-4 border-t border-slate-200/60 dark:border-slate-700/60">
+                        <div>
+                            <h3 class="font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-1">Learning Mode <span class="bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400 text-[10px] px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider">New</span></h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Get immediate feedback after answering</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="learning-mode-toggle" class="sr-only peer">
+                            <div
+                                class="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 dark:after:border-slate-500 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600 dark:peer-checked:bg-green-500">
+                            </div>
+                        </label>
+                    </div>
+
                     <!-- Importer -->
                     <div class="pt-4 border-t border-slate-200/60 dark:border-slate-700/60">
                         <div class="mb-3">
@@ -173,13 +185,14 @@
                             </div>
                         </div>
 
-                        <!-- Format Questions Button -->
-                        <div class="mb-4">
+                        <!-- Format Questions Button & File Importer -->
+                        <div class="mb-4 flex flex-col sm:flex-row gap-3">
                             <a href="https://gemini.google.com/gem/1hxX-AAspjtZr3wYTJZLDL9wCZC-AtnWE?usp=sharing" target="_blank" rel="noopener noreferrer" 
-                               class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 dark:from-blue-500 dark:to-indigo-500 dark:hover:from-blue-600 dark:hover:to-indigo-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-all shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/40 hover:-translate-y-0.5">
+                               class="flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 dark:from-blue-500 dark:to-indigo-500 dark:hover:from-blue-600 dark:hover:to-indigo-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-all shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/40 hover:-translate-y-0.5">
                                 <i class="ph-fill ph-sparkle text-lg"></i>
-                                Format Questions with Gemini AI
+                                Format with Gemini AI
                             </a>
+
                         </div>
                         <textarea id="import-text"
                             class="w-full h-32 rounded-lg border border-slate-200 dark:border-slate-700 p-3 text-sm text-slate-700 dark:text-slate-200 bg-white/70 dark:bg-slate-800/70 focus:outline-none focus:ring-2 focus:ring-blue-500/50 mb-3 custom-scrollbar"
@@ -193,6 +206,44 @@
                                     class="bg-blue-100 hover:bg-blue-200 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-400 px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center gap-2">
                                     <i class="ph ph-eye"></i> Preview & Edit
                                 </button>
+                            </div>
+                        </div>
+
+                        <!-- Standard Question Template -->
+                        <div class="mt-5 bg-white/60 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-lg p-4 shadow-sm">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                                <h4 class="font-semibold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-2">
+                                    <i class="ph ph-list-numbers text-blue-500"></i> Mẫu câu hỏi chuẩn:
+                                </h4>
+                                <button id="load-sample-btn" class="w-full sm:w-auto text-xs bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-3 py-1.5 rounded-md font-medium transition-colors flex items-center justify-center gap-1.5 border border-slate-200 dark:border-slate-600 shadow-sm">
+                                    <i class="ph ph-download-simple"></i> Dùng thử mẫu
+                                </button>
+                            </div>
+                            <div class="bg-slate-50 dark:bg-slate-900 p-3 rounded-md border border-slate-200/60 dark:border-slate-700/60 overflow-x-auto">
+                                <pre class="font-mono text-xs sm:text-sm text-slate-600 dark:text-slate-400 whitespace-pre-wrap break-words leading-relaxed">Câu 1: Thủ đô của Việt Nam là gì?
+A. TP. Hồ Chí Minh
+/B. Hà Nội
+C. Đà Nẵng
+D. Cần Thơ
+
+Câu 2: Hình ảnh dưới đây là con vật gì?
+https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Cat_August_2010-4.jpg/181px-Cat_August_2010-4.jpg
+/A. Con mèo
+B. Con chó
+C. Con chim
+D. Con cá
+
+Câu 3: Công thức hóa học của nước là gì?
+A. CO2
+B. O2
+C. NaCl
+/D. H2O
+
+Câu 4: Nối các từ tiếng Anh với nghĩa tiếng Việt tương ứng:
+Apple :: Quả táo
+Banana :: Quả chuối
+Watermelon :: Dưa hấu
+Strawberry :: Quả dâu tây</pre>
                             </div>
                         </div>
 

@@ -11,8 +11,9 @@ const state = {
     timerSettingMinutes: 60,
     isRandomized: true,
     isRandomizedOptions: true,
+    isLearningMode: false,
     customQuestions: null,
-    theme: 'light',
+
     isTestActive: false,
     isCheat: false,
     flags: new Set(),
@@ -39,7 +40,10 @@ const DOM = {
         timerSetting: document.getElementById('timer-setting'),
         randomizeToggle: document.getElementById('randomize-toggle'),
         randomizeOptionsToggle: document.getElementById('randomize-options-toggle'),
+        learningModeToggle: document.getElementById('learning-mode-toggle'),
         importText: document.getElementById('import-text'),
+
+        loadSampleBtn: document.getElementById('load-sample-btn'),
         previewBtn: document.getElementById('preview-btn'),
         importStatus: document.getElementById('import-status'),
         quizTitleInput: document.getElementById('quiz-title-input'),
@@ -86,10 +90,6 @@ const DOM = {
         flaggedCount: document.getElementById('flagged-count'),
         cancelBtn: document.getElementById('cancel-submit-btn'),
         confirmBtn: document.getElementById('confirm-submit-btn')
-    },
-    theme: {
-        toggleBtn: document.getElementById('theme-toggle'),
-        icon: document.getElementById('theme-toggle-icon')
     }
 };
 
@@ -110,13 +110,17 @@ function init() {
 
     DOM.home.randomizeToggle.addEventListener('change', (e) => state.isRandomized = e.target.checked);
     DOM.home.randomizeOptionsToggle.addEventListener('change', (e) => state.isRandomizedOptions = e.target.checked);
+    if(DOM.home.learningModeToggle) DOM.home.learningModeToggle.addEventListener('change', (e) => state.isLearningMode = e.target.checked);
     DOM.home.previewBtn.addEventListener('click', openQuizEditor);
+
+    if (DOM.home.loadSampleBtn) DOM.home.loadSampleBtn.addEventListener('click', loadSampleQuestions);
     DOM.home.importText.addEventListener('input', () => {
         if (state.currentQuizTitle !== 'Unnamed Quiz') {
             state.currentQuizTitle = 'Unnamed Quiz';
             displayPersonalBestOnHome();
             renderHistory();
         }
+        validateImportArea();
     });
     DOM.home.closeEditorBtn.addEventListener('click', closeQuizEditor);
     DOM.home.saveQuizBtn.addEventListener('click', saveCurrentQuiz);
@@ -152,21 +156,6 @@ function init() {
 
 
 
-    // Theme setup
-    const savedTheme = localStorage.getItem('theme');
-    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
-        document.documentElement.classList.add('dark');
-        state.theme = 'dark';
-    } else {
-        state.theme = 'light';
-    }
-    updateThemeIcon();
-
-    if (DOM.theme.toggleBtn) {
-        DOM.theme.toggleBtn.addEventListener('click', toggleTheme);
-    }
-
     // Load PB, History, and Quiz Library
     loadPersonalBest();
     loadHistory();
@@ -177,30 +166,10 @@ function init() {
     DOM.home.clearHistoryBtn.addEventListener('click', clearHistory);
 
     renderHistory();
+    validateImportArea(); // Initial validation check
 }
 
-// ===== THEME LOGIC =====
-function toggleTheme() {
-    if (state.theme === 'light') {
-        document.documentElement.classList.add('dark');
-        state.theme = 'dark';
-        localStorage.setItem('theme', 'dark');
-    } else {
-        document.documentElement.classList.remove('dark');
-        state.theme = 'light';
-        localStorage.setItem('theme', 'light');
-    }
-    updateThemeIcon();
-}
 
-function updateThemeIcon() {
-    if (!DOM.theme.icon) return;
-    if (state.theme === 'dark') {
-        DOM.theme.icon.className = 'ph ph-sun text-xl md:text-2xl text-amber-400';
-    } else {
-        DOM.theme.icon.className = 'ph ph-moon text-xl md:text-2xl text-slate-600';
-    }
-}
 
 // ===== CORE LOGIC =====
 
@@ -366,6 +335,7 @@ function loadQuiz(id) {
         displayPersonalBestOnHome();
         renderHistory();
         showToast(`Successfully loaded "${quiz.title}"`);
+        validateImportArea(true);
     }
 }
 
@@ -466,22 +436,40 @@ function renderQuizEditor() {
         html += `
             <div class="p-4 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700" data-index="${index}">
                 <div class="mb-3">
-                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Question ${index + 1}</label>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Question ${index + 1} (${q.type === 'matching' ? 'Matching' : 'Multiple Choice'})</label>
                     <textarea class="edit-q-text w-full rounded border border-slate-300 dark:border-slate-600 p-2 text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-1 focus:ring-blue-500" rows="2">${q.text}</textarea>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        `;
+        
+        if (q.type === 'matching') {
+            html += `<div class="space-y-3 mt-2">`;
+            q.pairs.forEach((p, pIndex) => {
+                html += `
+                    <div class="flex flex-col sm:flex-row items-center gap-2">
+                        <input type="text" class="edit-q-match-left flex-1 w-full rounded border border-slate-300 dark:border-slate-600 p-1.5 text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-1 focus:ring-blue-500" data-pair-idx="${pIndex}" value="${p.leftText}">
+                        <span class="text-slate-400 font-bold hidden sm:block">::</span>
+                        <input type="text" class="edit-q-match-right flex-1 w-full rounded border border-slate-300 dark:border-slate-600 p-1.5 text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-1 focus:ring-blue-500" data-pair-idx="${pIndex}" value="${p.rightText}">
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        } else {
+            html += `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
                     ${q.options.map((opt, oIndex) => `
                         <div class="flex items-center gap-2">
                             <input type="radio" name="edit-correct-${index}" value="${opt.id}" class="edit-q-correct cursor-pointer w-4 h-4 text-blue-600 focus:ring-blue-500 border-slate-300 dark:border-slate-600 dark:bg-slate-900" ${q.correct === opt.id ? 'checked' : ''}>
                             <div class="flex-grow flex items-center">
-                                <span class="text-sm font-semibold text-slate-600 dark:text-slate-400 w-6">${opt.id}.</span>
+                                <span class="text-sm font-semibold text-slate-600 dark:text-slate-400 w-6">${opt.id.toUpperCase()}.</span>
                                 <input type="text" class="edit-q-opt flex-grow rounded border border-slate-300 dark:border-slate-600 p-1.5 text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-1 focus:ring-blue-500" data-opt-id="${opt.id}" value="${opt.text}">
                             </div>
                         </div>
                     `).join('')}
                 </div>
-            </div>
-        `;
+            `;
+        }
+        
+        html += `</div>`;
     });
     DOM.home.quizEditorContainer.innerHTML = html;
 }
@@ -498,16 +486,26 @@ function handleQuestionEdit(e) {
         q.text = e.target.value;
     }
 
-    // Update Option Text
+    // Update Option Text (MCQ)
     if (e.target.classList.contains('edit-q-opt')) {
         const optId = e.target.dataset.optId;
         const opt = q.options.find(o => o.id === optId);
         if (opt) opt.text = e.target.value;
     }
 
-    // Update Correct Answer
+    // Update Correct Answer (MCQ)
     if (e.target.classList.contains('edit-q-correct')) {
         q.correct = e.target.value;
+    }
+    
+    // Update Matching Pairs
+    if (e.target.classList.contains('edit-q-match-left')) {
+        const pairIdx = parseInt(e.target.dataset.pairIdx);
+        if (q.pairs && q.pairs[pairIdx]) q.pairs[pairIdx].leftText = e.target.value;
+    }
+    if (e.target.classList.contains('edit-q-match-right')) {
+        const pairIdx = parseInt(e.target.dataset.pairIdx);
+        if (q.pairs && q.pairs[pairIdx]) q.pairs[pairIdx].rightText = e.target.value;
     }
 
     reconstructTextarea();
@@ -518,15 +516,23 @@ function reconstructTextarea() {
     state.customQuestions.forEach((q, index) => {
         rawText += `Câu ${index + 1}: ${q.text}\n`;
 
-        const optionStrings = q.options.map(opt => {
-            const isCorrect = q.correct === opt.id ? '/' : '';
-            return `${isCorrect}${opt.id}. ${opt.text}`;
-        });
-
-        rawText += optionStrings.join(' ') + '\n\n';
+        if (q.type === 'matching') {
+            const pairStrings = q.pairs.map(p => {
+                return `${p.leftText} :: ${p.rightText}`;
+            });
+            rawText += pairStrings.join('\n') + '\n\n';
+        } else {
+            const optionStrings = q.options.map(opt => {
+                const isCorrect = q.correct === opt.id ? '/' : '';
+                return `${isCorrect}${opt.id.toUpperCase()}. ${opt.text}`;
+            });
+            rawText += optionStrings.join('\n') + '\n\n';
+        }
     });
 
     DOM.home.importText.value = rawText.trim();
+    // Validate to update the ready state count if format becomes invalid
+    validateImportArea(true);
 }
 
 function shuffleArray(array) {
@@ -568,8 +574,48 @@ function parseQuestions(text) {
         let block = qBlocks[i].trim();
         if (!/^(?:Question|C[aâ]u)\s+\d+:/i.test(block)) continue;
 
+        // Check if it's a matching question (contains ::)
+        if (block.includes('::')) {
+            const headerMatch = block.match(/^(?:Question|C[aâ]u)\s+\d+:\s*(.*)/is);
+            if (!headerMatch) continue;
+            
+            const lines = block.split('\n');
+            let qTextLines = [];
+            let pairs = [];
+            
+            lines.forEach((line, idx) => {
+                if (idx === 0) {
+                    const match = line.match(/^(?:Question|C[aâ]u)\s+\d+:\s*(.*)/i);
+                    if (match) qTextLines.push(match[1].trim());
+                } else if (line.includes('::')) {
+                    const parts = line.split('::');
+                    if (parts.length >= 2) {
+                        pairs.push({
+                            leftId: `l${pairs.length}`,
+                            leftText: parts[0].trim(),
+                            rightId: `r${pairs.length}`,
+                            rightText: parts[1].trim()
+                        });
+                    }
+                } else if (line.trim() !== '' && pairs.length === 0) {
+                    qTextLines.push(line.trim());
+                }
+            });
+            
+            if (pairs.length > 0) {
+                parsedQuestions.push({
+                    id: i,
+                    type: 'matching',
+                    text: qTextLines.join(' '),
+                    pairs: pairs
+                });
+                continue;
+            }
+        }
+
         // Find where options start loosely by looking for A., /A., B., /B. etc.
-        const splitIndex = block.search(/\/?(?:A|B|C|D)\./i);
+        // Require \s after the dot to avoid matching inside URLs (e.g. 'd.w' in 'upload.wikimedia')
+        const splitIndex = block.search(/\/?(?:A|B|C|D)\.\s/i);
         if (splitIndex === -1) continue;
 
         const qHeader = block.substring(0, splitIndex).trim();
@@ -602,6 +648,7 @@ function parseQuestions(text) {
 
             parsedQuestions.push({
                 id: i,
+                type: 'multiple_choice',
                 text: qText,
                 options: options,
                 correct: correctId
@@ -617,6 +664,113 @@ function parseQuestions(text) {
         DOM.home.importStatus.innerText = "Error: Could not parse questions. Check format.";
         DOM.home.importStatus.className = "text-xs font-medium text-red-500";
         state.customQuestions = null;
+    }
+}
+
+
+
+function loadSampleQuestions() {
+    const sampleData = `Câu 1: Thủ đô của Việt Nam là gì?
+A. TP. Hồ Chí Minh
+/B. Hà Nội
+C. Đà Nẵng
+D. Cần Thơ
+
+Câu 2: Hình ảnh dưới đây là con vật gì?
+https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Cat_August_2010-4.jpg/181px-Cat_August_2010-4.jpg
+/A. Con mèo
+B. Con chó
+C. Con chim
+D. Con cá
+
+Câu 3: Công thức hóa học của nước là gì?
+A. CO2
+B. O2
+C. NaCl
+/D. H2O
+
+Câu 4: Nối các từ tiếng Anh với nghĩa tiếng Việt tương ứng:
+Apple :: Quả táo
+Banana :: Quả chuối
+Watermelon :: Dưa hấu
+Strawberry :: Quả dâu tây`;
+    
+    DOM.home.importText.value = sampleData;
+    validateImportArea();
+    showToast("Sample questions loaded!");
+}
+
+function validateImportArea(skipStatusUpdate = false) {
+    const rawText = DOM.home.importText.value.trim();
+    if (!rawText) {
+        DOM.home.startBtn.disabled = true;
+        DOM.home.startBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        DOM.home.startBtn.classList.remove('hover:bg-blue-700', 'dark:hover:bg-blue-600', 'group');
+        if (!skipStatusUpdate) {
+            DOM.home.importStatus.innerText = "Format: '/X.' for correct answers";
+            DOM.home.importStatus.className = "text-xs font-medium text-slate-500 dark:text-slate-400";
+        }
+        return;
+    }
+
+    const qBlocks = rawText.split(/(?=(?:Question|C[aâ]u)\s+\d+:)/i);
+    let allValid = true;
+    let questionCount = 0;
+
+    for (let i = 0; i < qBlocks.length; i++) {
+        let block = qBlocks[i].trim();
+        if (!/^(?:Question|C[aâ]u)\s+\d+:/i.test(block)) continue;
+        
+        questionCount++;
+        
+        // Match matching question
+        if (block.includes('::')) {
+            const pairs = block.split('\n').filter(l => l.includes('::'));
+            if (pairs.length === 0) {
+                allValid = false;
+                break;
+            }
+            continue;
+        }
+
+        const splitIndex = block.search(/\/?(?:A|B|C|D)\.\s/i);
+        if (splitIndex === -1) {
+            allValid = false;
+            break;
+        }
+
+        let optionsHtml = block.substring(splitIndex);
+        const optMatches = [...optionsHtml.matchAll(/(\/?)([A-D])\.\s*(.*?)(?=\/?(?:[A-D])\.\s*|$)/gis)];
+        
+        // Validation: must have at least one correct answer
+        let hasCorrect = optMatches.some(m => m[1] === '/');
+        if (!hasCorrect) {
+            allValid = false;
+            break;
+        }
+    }
+
+    if (questionCount > 0 && allValid) {
+        DOM.home.startBtn.disabled = false;
+        DOM.home.startBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        DOM.home.startBtn.classList.add('hover:bg-blue-700', 'dark:hover:bg-blue-600', 'group');
+        if (!skipStatusUpdate) {
+            DOM.home.importStatus.innerText = `${questionCount} valid question(s). Ready to start!`;
+            DOM.home.importStatus.className = "text-xs font-medium text-green-600 dark:text-green-400";
+        }
+    } else {
+        DOM.home.startBtn.disabled = true;
+        DOM.home.startBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        DOM.home.startBtn.classList.remove('hover:bg-blue-700', 'dark:hover:bg-blue-600', 'group');
+        if (!skipStatusUpdate) {
+            if (questionCount === 0) {
+                 DOM.home.importStatus.innerText = "No questions found. Check format.";
+                 DOM.home.importStatus.className = "text-xs font-medium text-amber-500 dark:text-amber-400";
+            } else {
+                 DOM.home.importStatus.innerText = "Error: Invalid question format (check A/B/C/D or :: pairs).";
+                 DOM.home.importStatus.className = "text-xs font-medium text-red-500 dark:text-red-400";
+            }
+        }
     }
 }
 
@@ -670,10 +824,20 @@ function startTest() {
     }, 1000);
 
     // Deep copy to prevent modifying the original options array if options are shuffled
-    let activeQuestions = state.customQuestions.map(q => ({
-        ...q,
-        options: [...q.options]
-    }));
+    let activeQuestions = state.customQuestions.map(q => {
+        if (q.type === 'matching') {
+            return {
+                ...q,
+                pairs: [...q.pairs],
+                rightOptions: [...q.pairs].map(p => ({ id: p.rightId, text: p.rightText }))
+            };
+        } else {
+            return {
+                ...q,
+                options: [...q.options]
+            };
+        }
+    });
 
     state.questionCount = activeQuestions.length;
 
@@ -685,11 +849,24 @@ function startTest() {
 
     if (state.isRandomizedOptions) {
         state.questions.forEach(q => {
-            shuffleArray(q.options);
+            if (q.type === 'matching') {
+                shuffleArray(q.rightOptions);
+            } else {
+                shuffleArray(q.options);
+            }
+        });
+    } else {
+        // Even if options are not globally randomized, matching right side MUST be randomized 
+        // to prevent trivial line-by-line solving.
+        state.questions.forEach(q => {
+            if (q.type === 'matching') {
+                shuffleArray(q.rightOptions);
+            }
         });
     }
 
     state.answers = {};
+    state.matchingActiveLeft = {};
     state.flags.clear();
     state.timeRemaining = state.timerSettingMinutes * 60; // Use configured minutes
     state.startTime = new Date();
@@ -736,46 +913,296 @@ function renderQuestions() {
                     <i class="ph ${isFlagged ? 'ph-fill' : ''} ph-flag text-xl transition-transform ${isFlagged ? 'scale-110' : ''}"></i>
                 </button>
             </div>
-            <div class="space-y-3 pl-0 md:pl-14">
+            `;
+        // Options branching
+        if (q.type === 'matching') {
+            html += `<div class="mt-4 grid grid-cols-2 gap-3 sm:gap-4 matching-container relative" id="matching-q${index}">`;
+            
+            // Left Column (A)
+            html += `<div class="flex flex-col gap-3">`; 
+            q.pairs.forEach(p => {
+                const textWithImages = replaceLinksToImages(p.leftText);
+                html += `
+                    <button onclick="handleMatchingSelection(${index}, 'left', '${p.leftId}')" id="matching-${index}-left-${p.leftId}" class="matching-left-btn flex items-center p-3 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 w-full text-left transition-all hover:bg-slate-50 dark:hover:bg-slate-700 relative h-full">
+                        <span class="text-slate-700 dark:text-slate-200 font-medium break-words w-full pr-2">${textWithImages}</span>
+                    </button>
                 `;
-
-        // Options
-        q.options.forEach(opt => {
-            const optTextWithImages = replaceLinksToImages(opt.text);
-            const inputId = `q${index}-opt-${opt.id}`;
-            html += `
-                <label for="${inputId}" class="option-label flex items-center p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 w-full group">
-                    <input type="radio" id="${inputId}" name="q${index}" value="${opt.id}" class="custom-radio mr-4" onchange="handleAnswer(${index}, '${opt.id}')">
-                        <span class="text-slate-700 dark:text-slate-200 font-medium group-hover:text-slate-900 dark:group-hover:text-white w-full break-words">${optTextWithImages}</span>
-                </label>
+            });
+            html += `</div>`;
+            
+            // Right Column (B)
+            html += `<div class="flex flex-col gap-3">`; 
+            q.rightOptions.forEach(opt => {
+                const textWithImages = replaceLinksToImages(opt.text);
+                html += `
+                    <button onclick="handleMatchingSelection(${index}, 'right', '${opt.id}')" id="matching-${index}-right-${opt.id}" class="matching-right-btn flex items-center justify-between p-3 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 w-full text-left transition-all hover:bg-slate-50 dark:hover:bg-slate-700 h-full">
+                        <span class="text-slate-700 dark:text-slate-200 font-medium break-words w-full">${textWithImages}</span>
+                    </button>
                 `;
-        });
-
-        html += `</div>`;
+            });
+            html += `</div>`;
+            
+            html += `</div>`;
+            html += `<p class="mt-4 mb-2 text-xs text-slate-500 italic text-center col-span-2 hidden sm:block"><i class="ph ph-hand-pointing"></i> Click an item on the left, then click an item on the right to pair.</p>`;
+        } else {
+            html += `<div class="space-y-3 pl-0 md:pl-14">`;
+            q.options.forEach(opt => {
+                const optTextWithImages = replaceLinksToImages(opt.text);
+                const inputId = `q${index}-opt-${opt.id}`;
+                html += `
+                    <label for="${inputId}" class="option-label flex items-center p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 w-full group">
+                        <input type="radio" id="${inputId}" name="q${index}" value="${opt.id}" class="custom-radio mr-4" onchange="handleAnswer(${index}, '${opt.id}')">
+                            <span class="text-slate-700 dark:text-slate-200 font-medium group-hover:text-slate-900 dark:group-hover:text-white w-full break-words">${optTextWithImages}</span>
+                    </label>
+                    `;
+            });
+            html += `</div>`;
+        }
         card.innerHTML = html;
         DOM.quiz.questionsContainer.appendChild(card);
     });
 }
 
 // Global handler attached to window for inline onclick
-function handleAnswer(questionIndex, optionId) {
+window.handleAnswer = function(questionIndex, optionId) {
+    if (state.isLearningMode && state.answers[questionIndex] !== undefined) {
+        // If learning mode is on and already answered, do not allow changes
+        return;
+    }
+
     state.answers[questionIndex] = optionId;
+    const q = state.questions[questionIndex];
 
     // Visual update logic: Update the parent label classes
     const card = document.getElementById(`q-card-${questionIndex}`);
     const labels = card.querySelectorAll('.option-label');
 
-    labels.forEach(label => {
-        label.classList.remove('option-selected');
-        const input = label.querySelector('input');
-        if (input.checked) {
-            label.classList.add('option-selected');
-        }
-    });
+    if (state.isLearningMode) {
+        labels.forEach(label => {
+            const input = label.querySelector('input');
+            input.disabled = true; // Lock all inputs for this question
+            label.classList.add('opacity-70', 'cursor-not-allowed'); // Visual locking
+
+            const isSelected = input.checked;
+            const isCorrect = input.value === q.correct;
+
+            if (isCorrect) {
+                // Highlight correct answer in green
+                label.classList.remove('border-slate-200', 'dark:border-slate-700', 'bg-white/50', 'dark:bg-slate-800/50', 'hover:bg-slate-50', 'dark:hover:bg-slate-700');
+                label.classList.add('border-green-500', 'bg-green-50', 'dark:bg-green-900/30');
+                
+                // Add check icon if not exists
+                if (!label.querySelector('.ph-check-circle')) {
+                   const icon = document.createElement('i');
+                   icon.className = 'ph-fill ph-check-circle text-green-500 text-xl ml-auto';
+                   label.appendChild(icon);
+                }
+            } else if (isSelected && !isCorrect) {
+                // Highlight incorrect selected answer in red
+                label.classList.remove('border-slate-200', 'dark:border-slate-700', 'bg-white/50', 'dark:bg-slate-800/50', 'hover:bg-slate-50', 'dark:hover:bg-slate-700');
+                label.classList.add('border-red-500', 'bg-red-50', 'dark:bg-red-900/30');
+                
+                // Add X icon if not exists
+                if (!label.querySelector('.ph-x-circle')) {
+                   const icon = document.createElement('i');
+                   icon.className = 'ph-fill ph-x-circle text-red-500 text-xl ml-auto';
+                   label.appendChild(icon);
+                }
+            }
+        });
+    } else {
+        // Standard Mode Visuals
+        labels.forEach(label => {
+            label.classList.remove('option-selected');
+            const input = label.querySelector('input');
+            if (input.checked) {
+                label.classList.add('option-selected');
+            }
+        });
+    }
 
     updateProgressIndicator();
     updateReviewPanel();
 };
+
+const matchColors = [
+    { border: 'border-blue-400 dark:border-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/40', text: 'text-blue-600 dark:text-blue-400' },
+    { border: 'border-emerald-400 dark:border-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-900/40', text: 'text-emerald-600 dark:text-emerald-400' },
+    { border: 'border-amber-400 dark:border-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/40', text: 'text-amber-600 dark:text-amber-400' },
+    { border: 'border-purple-400 dark:border-purple-500', bg: 'bg-purple-50 dark:bg-purple-900/40', text: 'text-purple-600 dark:text-purple-400' },
+    { border: 'border-pink-400 dark:border-pink-500', bg: 'bg-pink-50 dark:bg-pink-900/40', text: 'text-pink-600 dark:text-pink-400' },
+    { border: 'border-cyan-400 dark:border-cyan-500', bg: 'bg-cyan-50 dark:bg-cyan-900/40', text: 'text-cyan-600 dark:text-cyan-400' },
+];
+
+window.updateMatchingVisuals = function(questionIndex) {
+    const q = state.questions[questionIndex];
+    if (!q || q.type !== 'matching') return;
+    
+    const ans = state.answers[questionIndex] || {};
+    const activeLeft = state.matchingActiveLeft[questionIndex];
+    
+    // Reset all buttons
+    const container = document.getElementById(`matching-q${questionIndex}`);
+    if (!container) return;
+    
+    const allBtns = container.querySelectorAll('button');
+    allBtns.forEach(btn => {
+        // Find specific match color classes and remove them explicitly to avoid bleeding
+        matchColors.forEach(color => {
+            color.border.split(' ').forEach(c => btn.classList.remove(c));
+            color.bg.split(' ').forEach(c => btn.classList.remove(c));
+        });
+        btn.classList.remove('ring-2', 'ring-blue-400', 'ring-emerald-400', 'ring-amber-400', 'ring-purple-400', 'ring-pink-400', 'ring-cyan-400');
+        
+        // Add back standard borders if missing
+        if (!btn.className.includes('border-slate-200')) {
+            btn.classList.add('border-slate-200', 'dark:border-slate-700', 'bg-white/50', 'dark:bg-slate-800/50');
+        }
+        
+        // Remove badge
+        const badge = btn.querySelector('.match-badge');
+        if (badge) badge.remove();
+    });
+
+    // Reapply paired visuals
+    q.pairs.forEach((p, idx) => {
+        const leftId = p.leftId;
+        const rightId = ans[leftId];
+        
+        const leftBtn = document.getElementById(`matching-${questionIndex}-left-${leftId}`);
+        const color = matchColors[idx % matchColors.length];
+        const ringColor = `ring-${color.border.split('-')[1]}-400`;
+        
+        if (leftBtn) {
+            if (activeLeft === leftId) {
+                // Highlight as active
+                leftBtn.classList.remove('border-slate-200', 'dark:border-slate-700', 'bg-white/50', 'dark:bg-slate-800/50');
+                leftBtn.classList.add('ring-2', ringColor, ...color.border.split(' '), ...color.bg.split(' '));
+            } else if (rightId) {
+                // Paired
+                leftBtn.classList.remove('border-slate-200', 'dark:border-slate-700', 'bg-white/50', 'dark:bg-slate-800/50');
+                
+                let isCorrectMatch = false;
+                if (state.isLearningMode) {
+                    leftBtn.disabled = true;
+                    leftBtn.classList.remove('hover:bg-slate-50', 'dark:hover:bg-slate-700');
+                    leftBtn.classList.add('opacity-80', 'cursor-not-allowed');
+                    
+                    const correctPair = q.pairs.find(pair => pair.leftId === leftId);
+                    isCorrectMatch = correctPair && correctPair.rightId === rightId;
+                    
+                    if (isCorrectMatch) {
+                        leftBtn.classList.add('border-green-500', 'dark:border-green-500', 'bg-green-50', 'dark:bg-green-900/30', 'text-green-700', 'dark:text-green-400');
+                        leftBtn.innerHTML += `<div class="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center bg-green-500 text-white shadow-sm z-10"><i class="ph-fill ph-check"></i></div>`;
+                    } else {
+                        leftBtn.classList.add('border-red-500', 'dark:border-red-500', 'bg-red-50', 'dark:bg-red-900/30', 'text-red-700', 'dark:text-red-400');
+                        leftBtn.innerHTML += `<div class="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center bg-red-500 text-white shadow-sm z-10"><i class="ph-fill ph-x"></i></div>`;
+                    }
+                } else {
+                    leftBtn.classList.add(...color.border.split(' '), ...color.bg.split(' '));
+                    // Add badge (standard mode)
+                    leftBtn.innerHTML += `<div class="match-badge absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${color.bg.split(' ')[0]} ${color.text} border border-current bg-white dark:bg-slate-900 shadow-sm z-10">${idx + 1}</div>`;
+                }
+            }
+        }
+        
+        if (rightId) {
+            const rightBtn = document.getElementById(`matching-${questionIndex}-right-${rightId}`);
+            if (rightBtn) {
+                rightBtn.classList.remove('border-slate-200', 'dark:border-slate-700', 'bg-white/50', 'dark:bg-slate-800/50');
+                
+                let isCorrectMatch = false;
+                if (state.isLearningMode) {
+                    rightBtn.disabled = true;
+                    rightBtn.classList.remove('hover:bg-slate-50', 'dark:hover:bg-slate-700');
+                    rightBtn.classList.add('opacity-80', 'cursor-not-allowed');
+                    
+                    const correctPair = q.pairs.find(pair => pair.leftId === leftId);
+                    isCorrectMatch = correctPair && correctPair.rightId === rightId;
+                    
+                    if (isCorrectMatch) {
+                        rightBtn.classList.add('border-green-500', 'dark:border-green-500', 'bg-green-50', 'dark:bg-green-900/30', 'text-green-700', 'dark:text-green-400');
+                        rightBtn.innerHTML += `<div class="shrink-0 ml-2 w-6 h-6 rounded-full flex items-center justify-center bg-green-500 text-white shadow-sm z-10"><i class="ph-fill ph-check"></i></div>`;
+                    } else {
+                        rightBtn.classList.add('border-red-500', 'dark:border-red-500', 'bg-red-50', 'dark:bg-red-900/30', 'text-red-700', 'dark:text-red-400');
+                        rightBtn.innerHTML += `<div class="shrink-0 ml-2 w-6 h-6 rounded-full flex items-center justify-center bg-red-500 text-white shadow-sm z-10"><i class="ph-fill ph-x"></i></div>`;
+                    }
+                } else {
+                    rightBtn.classList.add(...color.border.split(' '), ...color.bg.split(' '));
+                    // Add badge (standard mode)
+                    rightBtn.innerHTML += `<div class="match-badge w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${color.bg.split(' ')[0]} ${color.text} border border-current bg-white dark:bg-slate-900 shadow-sm shrink-0 ml-2 z-10">${idx + 1}</div>`;
+                }
+            }
+        }
+    });
+}
+
+window.handleMatchingSelection = function(questionIndex, side, id) {
+    if (!state.answers[questionIndex]) {
+        state.answers[questionIndex] = {};
+    }
+    
+    // In learning mode, if this specific left/right ID is already locked as a pair, do nothing.
+    // For left side, check if it exists in answers.
+    if (state.isLearningMode && side === 'left' && state.answers[questionIndex][id]) {
+        return;
+    }
+    // For right side, check if any left side maps to it
+    if (state.isLearningMode && side === 'right' && Object.values(state.answers[questionIndex]).includes(id)) {
+        return;
+    }
+    
+    if (side === 'left') {
+        // Toggle or set active left
+        if (state.matchingActiveLeft[questionIndex] === id) {
+            state.matchingActiveLeft[questionIndex] = null; // deselect
+        } else {
+            state.matchingActiveLeft[questionIndex] = id;
+        }
+    } else if (side === 'right') {
+        const activeLeft = state.matchingActiveLeft[questionIndex];
+        if (activeLeft) {
+            // Pair is formed
+            
+            if (state.isLearningMode) {
+                // If learning mode is ON, we evaluate immediately but ONLY this pair.
+                // We keep it in state.answers regardless of correct/incorrect so it counts as answered.
+                 state.answers[questionIndex][activeLeft] = id;
+                 state.matchingActiveLeft[questionIndex] = null; // reset active
+                 
+                 // Note: Visual updates for learning mode matching are handled inside updateMatchingVisuals
+            } else {
+                 // Check if right is already paired to something else, if so unpair that
+                for (const [l, r] of Object.entries(state.answers[questionIndex])) {
+                    if (r === id) {
+                        delete state.answers[questionIndex][l];
+                    }
+                }
+                state.answers[questionIndex][activeLeft] = id;
+                state.matchingActiveLeft[questionIndex] = null; // reset active
+            }
+        } else {
+            if (!state.isLearningMode) {
+                 // If they click right without active left, check if it's paired and unpair it
+                for (const [l, r] of Object.entries(state.answers[questionIndex])) {
+                    if (r === id) {
+                        delete state.answers[questionIndex][l];
+                        state.matchingActiveLeft[questionIndex] = l; // Optional: make left active
+                    }
+                }
+            }
+        }
+    }
+    
+    // Check if empty object, remove it so isQuestionAnswered works correctly
+    if (Object.keys(state.answers[questionIndex]).length === 0) {
+        delete state.answers[questionIndex];
+    }
+    
+    updateMatchingVisuals(questionIndex);
+    updateProgressIndicator();
+    updateReviewPanel();
+}
 
 window.toggleFlag = function (questionIndex) {
     if (state.flags.has(questionIndex)) {
@@ -794,8 +1221,24 @@ window.toggleFlag = function (questionIndex) {
     updateReviewPanel();
 };
 
+function isQuestionAnswered(index) {
+    const q = state.questions[index];
+    if (!q) return false;
+    const ans = state.answers[index];
+    if (q.type === 'matching') {
+        return ans && Object.keys(ans).length === q.pairs.length;
+    }
+    return ans !== undefined;
+}
+
 function updateProgressIndicator() {
-    const answeredCount = Object.keys(state.answers).length;
+    let answeredCount = 0;
+    if (state.questions && state.questions.length > 0) {
+        for (let i = 0; i < state.questionCount; i++) {
+            if (isQuestionAnswered(i)) answeredCount++;
+        }
+    }
+    
     DOM.quiz.progressText.innerText = `${answeredCount}/${state.questionCount}`;
 
     // Update progress bar
@@ -1047,73 +1490,131 @@ function evaluateResults() {
 
     state.questions.forEach((q, index) => {
         const userAnswer = state.answers[index];
-        const isCorrect = userAnswer === q.correct;
-
-        if (isCorrect) correct++;
-
-        // Find option texts
-        const userOpt = userAnswer ? q.options.find(o => o.id === userAnswer).text : "No answer";
-        const correctOpt = q.options.find(o => o.id === q.correct).text;
-
-        // Build review UI
-        const statusColor = isCorrect ? 'text-green-500 dark:text-green-400' : 'text-red-500 dark:text-red-400';
-        const icon = isCorrect ? 'ph-check-circle' : 'ph-x-circle';
-        const border = isCorrect ? 'border-green-100 dark:border-green-900/50 bg-green-50/30 dark:bg-green-900/10' : 'border-red-100 dark:border-red-900/50 bg-red-50/30 dark:bg-red-900/10';
-
-        let explanationHtml = '';
-        if (q.explanation && q.theory) {
-            explanationHtml = `
-                <div class="mt-4 pt-4 border-t border-slate-200/60 dark:border-slate-700/60">
-                    <div class="flex items-start gap-2 mb-2">
-                        <div class="mt-0.5 text-blue-500 dark:text-blue-400"><i class="ph fill ph-info"></i></div>
-                        <div>
-                            <div class="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-1">${q.theory}</div>
-                            <div class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">${q.explanation}</div>
+        let isCorrect = false;
+        let points = 0;
+        let qReviewHtml = '';
+        
+        if (q.type === 'matching') {
+            const userPairs = userAnswer || {};
+            let pairsCorrect = 0;
+            const totalPairs = q.pairs.length;
+            
+            let pairsReviewHtml = `<div class="mt-3 space-y-2">`;
+            
+            q.pairs.forEach(p => {
+                const rightId = userPairs[p.leftId];
+                const rightOptText = rightId ? q.rightOptions.find(o => o.id === rightId).text : "Not paired";
+                
+                const isPairCorrect = rightId === p.rightId;
+                if (isPairCorrect) pairsCorrect++;
+                
+                pairsReviewHtml += `
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm bg-white/60 dark:bg-slate-800/60 p-2 rounded border border-slate-100 dark:border-slate-700/50">
+                        <div class="flex items-center gap-2 flex-grow min-w-0">
+                            <i class="ph-fill ${isPairCorrect ? 'ph-check-circle text-green-500' : 'ph-x-circle text-red-500'} shrink-0 text-base"></i>
+                            <span class="font-medium text-slate-700 dark:text-slate-200 truncate flex-1" title="${p.leftText}">${p.leftText}</span>
+                            <i class="ph ph-arrow-right text-slate-400 shrink-0 hidden sm:block"></i>
+                            <span class="${isPairCorrect ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'} truncate flex-1 ${!rightId ? 'italic' : ''}" title="${rightOptText}">${rightOptText}</span>
+                        </div>
+                        ${!isPairCorrect ? `<div class="text-xs text-slate-500 dark:text-slate-400 italic sm:border-l sm:border-slate-300 dark:sm:border-slate-600 sm:pl-2 shrink-0">Correct: <span class="text-green-600 dark:text-green-400 font-medium">${p.rightText}</span></div>` : ''}
+                    </div>
+                `;
+            });
+            pairsReviewHtml += `</div>`;
+            
+            points = pairsCorrect / totalPairs;
+            isCorrect = points === 1;
+            correct += points;
+            
+            const statusColor = isCorrect ? 'text-green-500 dark:text-green-400' : (points > 0 ? 'text-amber-500 dark:text-amber-400' : 'text-red-500 dark:text-red-400');
+            const icon = isCorrect ? 'ph-check-circle' : (points > 0 ? 'ph-warning-circle' : 'ph-x-circle');
+            const border = isCorrect ? 'border-green-100 dark:border-green-900/50 bg-green-50/30 dark:bg-green-900/10' : (points > 0 ? 'border-amber-100 dark:border-amber-900/50 bg-amber-50/30 dark:bg-amber-900/10' : 'border-red-100 dark:border-red-900/50 bg-red-50/30 dark:bg-red-900/10');
+            
+            qReviewHtml = `
+                <div class="p-4 md:p-5 rounded-xl border ${border} mb-4 shadow-sm transition-all hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
+                    <div class="flex gap-4">
+                        <div class="mt-1 ${statusColor}">
+                            <i class="ph fill ${icon} text-2xl"></i>
+                        </div>
+                        <div class="flex-grow min-w-0">
+                            <div class="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1 flex justify-between">
+                                <span>Question ${index + 1}</span>
+                                <span class="${statusColor} font-bold">${points === 1 || points === 0 ? points : points.toFixed(2)} pts</span>
+                            </div>
+                            <div class="font-medium text-slate-800 dark:text-slate-100 mb-2">${replaceLinksToImages(q.text)}</div>
+                            ${pairsReviewHtml}
                         </div>
                     </div>
-                    ${!isCorrect && userAnswer ? `
-                        <div class="mt-2 text-sm text-slate-500 dark:text-slate-400 italic pl-6 border-l-2 border-red-200 dark:border-red-900/50 ml-1">
-                            Your choice "${userOpt}" is incorrect because it violates this rule.
+                </div>
+            `;
+        } else {
+            isCorrect = userAnswer === q.correct;
+            if (isCorrect) correct++;
+
+            const userOpt = userAnswer ? q.options.find(o => o.id === userAnswer).text : "No answer";
+            const correctOpt = q.options.find(o => o.id === q.correct).text;
+
+            const statusColor = isCorrect ? 'text-green-500 dark:text-green-400' : 'text-red-500 dark:text-red-400';
+            const icon = isCorrect ? 'ph-check-circle' : 'ph-x-circle';
+            const border = isCorrect ? 'border-green-100 dark:border-green-900/50 bg-green-50/30 dark:bg-green-900/10' : 'border-red-100 dark:border-red-900/50 bg-red-50/30 dark:bg-red-900/10';
+
+            let explanationHtml = '';
+            if (q.explanation && q.theory) {
+                explanationHtml = `
+                    <div class="mt-4 pt-4 border-t border-slate-200/60 dark:border-slate-700/60">
+                        <div class="flex items-start gap-2 mb-2">
+                            <div class="mt-0.5 text-blue-500 dark:text-blue-400"><i class="ph fill ph-info"></i></div>
+                            <div>
+                                <div class="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-1">${q.theory}</div>
+                                <div class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">${q.explanation}</div>
+                            </div>
                         </div>
-                    ` : ''}
+                        ${!isCorrect && userAnswer ? `
+                            <div class="mt-2 text-sm text-slate-500 dark:text-slate-400 italic pl-6 border-l-2 border-red-200 dark:border-red-900/50 ml-1">
+                                Your choice "${replaceLinksToImages(userOpt)}" is incorrect because it violates this rule.
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }
+
+            qReviewHtml = `
+                <div class="p-4 md:p-5 rounded-xl border ${border} mb-4 shadow-sm transition-all hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
+                    <div class="flex gap-4">
+                        <div class="mt-1 ${statusColor}">
+                            <i class="ph fill ${icon} text-2xl"></i>
+                        </div>
+                        <div class="flex-grow min-w-0">
+                            <div class="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">Question ${index + 1}</div>
+                            <div class="font-medium text-slate-800 dark:text-slate-100 mb-3">${replaceLinksToImages(q.text)}</div>
+                            <div class="text-sm grid grid-cols-1 md:grid-cols-2 gap-3 bg-white/60 dark:bg-slate-800/60 p-3 rounded-lg border border-slate-100 dark:border-slate-700/50">
+                                <div class="${isCorrect ? 'text-green-700 dark:text-green-400' : 'text-slate-600 dark:text-slate-300'} flex items-start gap-2 min-w-0">
+                                    <span class="font-semibold text-slate-400 dark:text-slate-500 whitespace-nowrap">Your Answer:</span> 
+                                    <span class="font-medium break-words ${!userAnswer ? 'italic opacity-60 text-slate-400 dark:text-slate-500' : ''}">${userAnswer ? replaceLinksToImages(userOpt) : 'Skipped'}</span>
+                                </div>
+                                ${!isCorrect ? `
+                                    <div class="text-green-600 dark:text-green-400 flex items-start gap-2 min-w-0">
+                                        <span class="font-semibold text-slate-400 dark:text-slate-500 whitespace-nowrap">Correct:</span> 
+                                        <span class="font-medium break-words">${replaceLinksToImages(correctOpt)}</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                            ${explanationHtml}
+                        </div>
+                    </div>
                 </div>
             `;
         }
-
-        reviewHtml += `
-            <div class="p-4 md:p-5 rounded-xl border ${border} mb-4 shadow-sm transition-all hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
-                <div class="flex gap-4">
-                    <div class="mt-1 ${statusColor}">
-                        <i class="ph fill ${icon} text-2xl"></i>
-                    </div>
-                    <div class="flex-grow">
-                        <div class="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">Question ${index + 1}</div>
-                        <div class="font-medium text-slate-800 dark:text-slate-100 mb-3">${q.text}</div>
-                        <div class="text-sm grid grid-cols-1 md:grid-cols-2 gap-3 bg-white/60 dark:bg-slate-800/60 p-3 rounded-lg border border-slate-100 dark:border-slate-700/50">
-                            <div class="${isCorrect ? 'text-green-700 dark:text-green-400' : 'text-slate-600 dark:text-slate-300'} flex items-start gap-2">
-                                <span class="font-semibold text-slate-400 dark:text-slate-500">Your Answer:</span> 
-                                <span class="font-medium ${!userAnswer ? 'italic opacity-60 text-slate-400 dark:text-slate-500' : ''}">${userAnswer ? userOpt : 'Skipped'}</span>
-                            </div>
-                            ${!isCorrect ? `
-                                <div class="text-green-600 dark:text-green-400 flex items-start gap-2">
-                                    <span class="font-semibold text-slate-400 dark:text-slate-500">Correct:</span> 
-                                    <span class="font-medium">${correctOpt}</span>
-                                </div>
-                            ` : ''}
-                        </div>
-                        ${explanationHtml}
-                    </div>
-                </div>
-            </div>
-        `;
+        
+        reviewHtml += qReviewHtml;
     });
 
     // Set Default UI states
     const scorePct = Math.round((correct / state.questionCount) * 100);
     DOM.result.newPbBadge.classList.add('hidden');
     DOM.result.scoreText.innerText = `${scorePct}%`;
-    DOM.result.correctCount.innerText = correct;
-    DOM.result.incorrectCount.innerText = state.questionCount - correct;
+    DOM.result.correctCount.innerText = correct % 1 === 0 ? correct : correct.toFixed(2);
+    DOM.result.incorrectCount.innerText = (state.questionCount - correct) % 1 === 0 ? (state.questionCount - correct) : (state.questionCount - correct).toFixed(2);
 
     const timeTakenSecs = Math.floor((state.endTime - state.startTime) / 1000);
     DOM.result.timeTaken.innerText = formatTimeToken(timeTakenSecs);
