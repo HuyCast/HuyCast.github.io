@@ -1,218 +1,406 @@
-Câu 1: Các khai báo sau đây, khai báo nào sai quy cách?
-/A. #include<io.h> B. #include<stdlib.h> C. #include<conio.h> D. #include<stdio.h>
-
-Câu 2: Để tiếp tục vòng lặp mà không cần thực hiện đến cuối, ta sử dụng câu lệnh:
-A. switch B. if /C. continue D. break
-
-Câu 3: Sử dụng ép kiểu nào là đúng với x là kiểu float và n là kiểu int?
-/A. x = (float)n + 2; B. x = tast)n + 2; C. x = float(n + 2) D. x = n + (float)2;
-
-Câu 4: Chương trình printf("\n%d", x, y) với x=15, y=28 sẽ kết xuất ra kết quả nào?
-/A. 15 B. 28 C. 15 28 D. Không có kết quả nào đúng
-
-Câu 5: Kết quả xuất ra của chương trình có lệnh: int a=b=c=10; a=b=c=50; printf("%d %d %d", a, b, c); là gì?
-A. 50 50 50 B. 10 10 10 C. Biên dịch được, lỗi khi thực thi /D. Bị lỗi khi biên dịch
-
-Câu 6: Khai báo "float a, b;" chiếm bao nhiêu byte trong bộ nhớ?
-A. 1 /B. 8 C. 4 D. 16
-
-Câu 7: Các tên do người dùng đặt sau đây, tên nào đặt sai quy cách?
-A. index B. big /C. 123abc D. ijk
-
-Câu 8: Để thoát khỏi vòng lặp giữa chừng, ta sử dụng câu lệnh:
-A. continue B. exit /C. break D. stop
-
-Câu 9: C quy định kích thước của kiểu char là bao nhiêu byte?
-/A. 1 B. 2 C. 4 D. Tất cả đều sai
-
-Câu 10: Cho biết kết quả của vòng lặp lồng nhau s=0; for(i=1;i<=5;i++) for(j=1;j<=6;j++) s=s+2;?
-A. 13 /B. 60 C. 32 D. 26
-
-Câu 11: Cho biết kết quả của đoạn chương trình: int n=10; while(n>=n) n--; printf("%d",n);?
-A. -1 B. 1 C. 10 /D. Lặp vô tận
-
-Câu 12: Kích thước của kiểu char trong C là:
-/A. 1 B. 2 C. 4 D. Tất cả đều sai
-
-Câu 13: Trong các khai báo (1)int count; (2)int Count; (3)char 12A1; (4)char While; (5)char email@; (6)float _max; (7)float a+b; (8)float struct;, những dòng nào đúng quy cách?
-A. (4)(6)(8) B. (1)(2)(5)(6)(8) C. (1)(3)(5)(7) /D. (1)(2)(6)
-
-Câu 14: Cấu trúc switch-case trong đoạn mã tính toán thiếu thành phần nào để được coi là "viết tốt"?
-A. Rất hoàn hảo /B. Thiếu trường hợp default C. Thiếu câu lệnh break D. Thiếu cả default và kiểm tra toán tử '/'
-
-Câu 15: Định dạng nào dùng để hiển thị số nguyên hệ 16 (hexadecimal)?
-A. %d B. %i /C. %x D. %u
-
-Câu 16: Giá trị của biểu thức logic 5 > 1 là bao nhiêu?
-/A. 1 B. -1 C. 0 D. Tất cả đều sai
-
-Câu 17: Trong C, biểu thức 5/10 * 10 có giá trị bằng bao nhiêu?
-/A. 0 B. 5 C. 10 D. Một giá trị khác
-
-Câu 18: Vòng lặp nào trong C sẽ kết thúc khi điều kiện lặp là SAI (False)?
-/A. for B. do...while C. while D. Tất cả đều đúng
-
-Câu 19: Kết quả của: char c=95; c+=10; printf("%d", c); là gì?
-/A. 105 B. i C. Báo lỗi D. Tất cả đều sai
-
-Câu 20: Định dạng nào sau đây dùng để in ra một chuỗi ký tự (string)?
-/A. "%s" B. "%f" C. "%c" D. "%x"
-
-Câu 21: Thứ tự thực hiện các phép toán trong C là:
-A. + - * / /B. * / + - C. * / % + - D. / + * -
-
-Câu 22: Kết xuất của mảng x[]={10,20,30,40,50}; in ra x[4], 3[x], x[2], 1[x], x[0] là:
-A. Xảy ra lỗi /B. 50 40 30 20 10 C. 10 20 30 40 50 D. Không có kết quả đúng
-
-Câu 23: Khi truyền một mảng vào hàm, tham số thực sự được truyền là gì?
-A. Giá trị các phần tử B. Phần tử đầu tiên /C. Địa chỉ cơ sở của mảng D. Địa chỉ phần tử cuối
-
-Câu 24: Điều gì xảy ra nếu gán giá trị cho phần tử mảng có chỉ số vượt quá kích thước?
-A. Gán bằng 0 B. Báo lỗi biên dịch /C. Ghi đè dữ liệu vùng nhớ khác D. Kích thước tự tăng
-
-Câu 25: Xác định ma trận A sau khi hoán đổi đường chéo phụ:
-A. A={{11, -12, 45, 27}...} B. Ma trận chuyển vị /C. A={{27, -12, 45, 11}, {39, 7, 10, 6}, {21, 0, -23, 84}, {73, -98, 100, 56}} D. Giữ nguyên
-
-Câu 26: Những phát biểu nào đúng về mảng một chiều?
-A. 1, 3, 5 B. 2, 3, 6 C. 2, 4, 5 /D. 1, 4, 6
-
-Câu 27: Biến M trong đoạn chương trình tính toán (tổng a[i]>0 / K) mang ý nghĩa gì?
-A. Trung bình cộng các phần tử mảng /B. Trung bình cộng các phần tử dương C. Tổng các phần tử dương D. Cả a,b,c đều sai
-
-Câu 28: Kết quả hàm FindX với a[]={-3,15,15,-3}, n=4, x=15 là?
-A. -1 B. 1 /C. 2 D. 3
-
-Câu 29: Kết quả in ra biến vt (vị trí phần tử max) của mảng {12, 10, 7, 8} là?
-/A. 0 B. 1 C. 2 D. Một kết quả khác
-
-Câu 30: Kết quả in ra các số lẻ của mảng {10,15,5,12,18,20} duyệt từ cuối về đầu:
-A. 10 15 5 12 18 20 B. 10 12 18 20 C. 20 18 12 10 /D. 5 15
-
-Câu 31: Sau khi thực hiện đoạn code hoán đổi nếu a[i] < a[j] với j=n-1:
-/A. Mảng a có a[0] là phần tử nhỏ nhất B. Mảng a giảm dần C. Mảng a có a[N-1] là phần tử lớn nhất D. Mảng a tăng dần
-
-Câu 32: Các hàm của kiểu chuỗi nào sau đây là không hợp lệ?
-A. strcat /B. strcut C. strnset D. strlen
-
-Câu 33: Hàm strcpy(s1, s2) có nghĩa là gì?
-A. Chép s1 vào s2 /B. Chép s2 vào s1 C. Ghép s2 vào s1 D. Không có kết quả đúng
-
-Câu 34: Kết quả in ra của chuỗi "CANTHO" sau lệnh a++ (với a là mảng):
-/A. Có lỗi xảy ra B. CANTHO C. ANTHO D. Không có kết quả đúng
-
-Câu 35: Ký tự nào sau đây được sử dụng như là ký tự kết thúc chuỗi?
-A. 0 /B. '\0' C. /0 D. Không có kết quả đúng
-
-Câu 36: Tập tin tiêu đề (header file) cần thiết cho hàm strcpy()?
-/A. string.h B. strings.h C. files.h D. ctype.h
-
-Câu 37: Hàm nào dùng để tìm sự xuất hiện đầu tiên của một chuỗi trong một chuỗi khác?
-A. strchr() B. strrchr() /C. strstr() D. strnset()
-
-Câu 38: Để sử dụng được hàm toupper(char c) ta phải khai báo thư viện nào?
-A. string.h B. stdio.h /C. ctype.h D. conio.h
-
-Câu 39: Kết quả trả về của hàm stricmp("abc","ABC") bằng bao nhiêu?
-/A. 0 B. 32 C. -1 D. 1
-
-Câu 40: Để khai báo một biến kiểu chuỗi chứa giá trị là “hello”, ta có thể thực hiện:
-A. char s[6]={'h','e','l','l','o','\0'}; B. char s[6]="hello"; C. char s[]="hello"; /D. Tất cả đều đúng
-
-Câu 41: Sau khi gán s1=s2 và strcpy(s2, "Hi"), kết quả in ra s1 là gì?
-A. s1="Hello", s1="World" B. s1="World", s1="World" /C. s1="World", s1="Hi" D. s1="Hello", s1="Hi"
-
-Câu 42: Giá trị hằng chuỗi D:\Data được viết trong C là:
-A. "D:\Data" /B. "D:\\Data" C. "D:\Data" D. Tất cả đều sai
-
-Câu 43: Kết quả trên màn hình sau khi đảo ngược n/2 ký tự đầu chuỗi "ABCDEF" là:
-A. ABCDEF /B. FEDCBA C. FEDDEF D. DEFABC
-
-Câu 44: Kết quả in ra màn hình của chuỗi "abCDe" sau khi chạy S[i] = toupper(S[i]) + 32:
-/A. abcde B. ABCDE C. ABcde D. AbcdE
-
-Câu 45: Xác định kết quả của strncpy(str2, strstr(strlwr(str1), "hoc"), 8) với str1="Hoc sinh hoc mon Sinh":
-A. str2: Hoc sinh /B. str2: hoc sinh C. str2: hoc mon D. str2: hoc sinh hoc mon sinh
-
-Câu 46: Để nhập từ bàn phím chuỗi “Dai hoc Can Tho”, ta có thể dùng hàm:
-A. puts(str) B. scanf("%s", str) C. scanf("%c", str) /D. gets(str)
-
-Câu 47: Trong C, chuỗi ký tự kết thúc bằng ký tự nào?
-A. '\n' B. '\t' /C. '\0' D. '\b'
-
-Câu 48: Hàm nào sau đây dùng để in một chuỗi ký tự ra màn hình?
-A. get() B. fputs() /C. puts() D. putc()
-
-Câu 49: Chương trình sau sẽ in ra kết quả gì? char arr[11]= "Lap trinh can ban"; printf("%s",arr);
-A. Lap trinh /B. Lap trinh (có thể rác bộ nhớ) C. Laptrinh D. Tất cả đều sai
-
-Câu 50: Cho biết kết quả thực hiện của strlen("123456")?
-/A. 6 B. 7 C. Lỗi biên dịch D. Tất cả đều sai
-
-Câu 51: Ý nghĩa của toán tử mũi tên trong a->b là?
-/A. (*a).b B. a.(*b) C. a.b D. Không có kết quả đúng
-
-Câu 52: Kích thước của kiểu cấu trúc struct point { int x; int y, z; } là bao nhiêu byte?
-/A. 6 (với int=2) B. 2 C. 4 D. Không có kết quả đúng
-
-Câu 53: Cách truy xuất thành phần của cấu trúc qua biến nv kiểu nhanvien:
-A. nhanvien.hoten /B. nv.hoten C. nv->hoten D. Không có kết quả đúng
-
-Câu 54: Cách viết nào sau đây là tương đương nhau để truy xuất trường X qua con trỏ Diem1?
-A. Diem1.X và Diem1->X B. (*Diem1).X và Diem1.X C. *Diem1.X và Diem1->X /D. (*Diem1).X và Diem1->X
-
-Câu 55: Đoạn lệnh khai báo kiểu cấu trúc dùng typedef thường đặt ở đâu?
-/A. Đặt ngoài hàm main() B. Đặt trong hàm main() C. Đặt ở vị trí bất kỳ D. Đặt trong chương trình con
-
-Câu 56: Để khai báo một biến có kiểu phân số, ta dùng cách nào?
-A. 1 B. 2 và 3 C. 1 và 2 /D. Cả 3 cách
-
-Câu 57: Truy xuất điểm trung bình của học viên thứ 2 (chỉ số 1) trong ds[5]:
-A. ds[1]->DiemTB B. &(ds[1]->DiemTB) C. (ds+2).DiemTB /D. ds[1].DiemTB
-
-Câu 58: Cho câu lệnh sau đây int **x;
-A. x là số nguyên /B. x là con trỏ chỉ đến một con trỏ khác C. x không phải con trỏ D. Không có kết quả đúng
-
-Câu 59: Hàm nào sẽ cấp phát lại (thay đổi kích thước) không gian bộ nhớ?
-/A. realloc() B. alloc() C. malloc() D. calloc()
-
-Câu 60: Khai báo int (*p) [20] có ý nghĩa là gì?
-A. p là mảng con trỏ /B. p là một con trỏ chỉ đến mảng 20 số nguyên C. p là một mảng 20 số nguyên D. Không có kết quả đúng
-
-Câu 61: Làm sao có thể kết hợp: char *p; p=(char*)malloc(200);?
-A. char p = *malloc(200) /B. char *p = (char*)malloc(200) C. char *p = (char)malloc(200) D. Không có kết quả đúng
-
-Câu 62: Toán tử nào được dùng để truy xuất thành viên cấu trúc thông qua con trỏ?
-A. . B. & C. * /D. ->
-
-Câu 63: Chương trình int *p; *p=10; printf("%d",*p); có kết quả gì?
-A. 10 B. 0 /C. Lỗi thực thi (truy cập vùng nhớ chưa cấp phát) D. Cả 3 đều sai
-
-Câu 64: Kết quả của: p=(int*)malloc(2); *p=10; printf("%d",*p);
-/A. 10 B. 0 C. báo lỗi D. Cả 3 câu đều sai
-
-Câu 65: Nhận xét về chương trình sử dụng gets(str) mà chưa cấp phát cho con trỏ str:
-A. Hoàn hảo B. Cần free(str) /C. Lỗi vì chưa cấp phát vùng nhớ D. Sai cú pháp
-
-Câu 66: Có thể truy xuất phần tử thứ i của mảng a qua con trỏ p bởi câu lệnh nào?
-A. &(p+i) /B. *(p+i) C. p+i D. p+&i
-
-Câu 67: Đọc dòng “Thanh pho Can Tho\r\n" bằng fgets(), biến s chứa:
-A. Thanh pho Can Tho B. Thanh pho Can Tho\r /C. Thanh pho Can Tho\n\0 D. Thanh pho Can Tho\r\n\0
-
-Câu 68: Đọc một ký tự duy nhất từ bàn phím với hàm nào sau đây?
-A. printf() B. scanf() C. puts() /D. getchar()
-
-Câu 70: Từ khóa được sử dụng để kiểm soát từ hàm được gọi quay về hàm gọi là?
-A. switch B. goto C. go back /D. return
-
-Câu 71: Chương trình gọi main() đệ quy không dừng sẽ in ra bao nhiêu lần "Hau Giang"?
-/A. Số lần không xác định (đến khi tràn stack) B. 32767 lần C. 65535 lần D. 1 lần
-
-Câu 72: Chế độ nào được sử dụng để mở tập tin văn bản và cho phép ghi mới hoàn toàn?
-A. wb /B. w C. a D. ab
-
-Câu 73: Ý nghĩa đoạn chương trình đọc f1 ghi sang f2:
-A. Tạo mới f2 và ghi rác B. Xóa f1 /C. Sao chép nội dung f1 sang f2 D. Không đổi nội dung f1
-
-Câu 74: Hàm được xây dựng luôn luôn phải có:
-A. Tên hàm B. Kiểu trả về C. Tham số /D. Tên hàm và kiểu trả về
+NGÂN HÀNG ĐỀ THI LẬP TRÌNH CĂN BẢN (THAM KHẢO)
+
+Nội dung 1: Các thành phần cơ bản, kiểu dữ liệu cơ bản, câu lệnh
+
+Câu 1. Các khai báo sau đây, khai báo nào sai quy cách?
+/a. #include<io.h> b. #include<stdlib.h> c. #include<stdio.h> d. #include<conio.h> [cite: 3, 4, 5, 6]
+
+Câu 2. Để tiếp tục vòng lặp mà không cần thực hiện đến cuối, ta sử dụng câu lệnh:
+a. break b. switch /c. continue d. if [cite: 7, 8, 9, 46]
+
+Câu 3. Sử dụng ép kiểu nào là đúng với x là kiểu float và n là kiểu int?
+/a. x = (float)n + 2; b. x = tast)n + 2; c. x = float(n + 2) d. x = n + (float) 2; [cite: 10, 11, 12, 13]
+
+Câu 4. Chương trình này sẽ kết xuất ra kết quả nào?
+void main ()
+{
+    int x = 15, y = 28;
+    printf ("\n%d", x, y);
+}
+/a. 15 b. 28 c. 15 28 d. Không có kết quả nào trên đây là đúng. [cite: 15, 16, 17, 18, 19, 21, 22, 23, 24]
+
+Câu 5. Kết quả xuất ra của chương trình này là gì?
+void main()
+{
+    int a=b=c=10;
+    a=b=c=50;
+    printf("\n%d %d %d", a, b, c);
+}
+a. 50 50 50 b. 10 10 10 c. Biên dịch được, lỗi khi thực thi /d. Bị lỗi khi biên dịch [cite: 25, 26, 27, 28, 29, 31, 32, 33, 34]
+
+Câu 6. Khai báo sau đây chiếm bao nhiêu byte trong bộ nhớ?
+float a, b;
+a. 1 /b. 8 c. 4 d. 16 [cite: 35, 36, 37, 38, 39]
+
+Câu 7. Các tên do người dùng đặt sau đây, tên nào đặt sai quy cách?
+a. index b. big /c. 123abc d. ijk [cite: 40, 41, 42, 43]
+
+Câu 8. Để thoát khỏi vòng lặp giữa chừng, ta sử dụng câu lệnh:
+a. continue b. exit /c. break d. stop [cite: 44, 46, 47, 8, 48]
+
+Câu 9. C quy định kích thước của kiểu char là bao nhiêu byte?
+/a. 1 b. 2 c. 4 d. Tất cả đều sai [cite: 49, 50, 51, 52, 80]
+
+Câu 10. Cho biết kết quả trên màn hình của chương trình sau:
+#include<stdio.h>
+int main() {
+    int s, i, j;
+    s = 0;
+    for (i=1; i<=5; i++)
+        for (j=1; j<=6; j++)
+            s = s + 2;
+    printf("%d", s);
+    return 0;
+}
+a. 13 b. 26 c. 32 /d. 60 [cite: 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 64, 65, 66]
+
+Câu 11. Cho biết kết quả trên màn hình của đoạn chương trình:
+#include<stdio.h>
+int main() {
+    int n = 10;
+    while (n >= n) n--;
+    printf("%d", n);
+    return 0;
+}
+a. -1 b. 1 c. 10 /d. Lặp vô tận [cite: 67, 68, 69, 70, 71, 72, 75, 76, 77, 78]
+
+Câu 12. C quy định kích thước của kiểu char là bao nhiêu?
+/a. 1 b. 2 c. 4 d. Tất cả đều sai [cite: 78, 79, 80, 81, 82]
+
+Câu 13. Cho các khai báo biến như dưới đây, những dòng nào có tên biến đặt đúng quy cách?
+(1) int count;
+(2) int Count;
+(3) char 12A1;
+(4) char While;
+(5) char email@;
+(6) float _max;
+(7) float a+b;
+(8) float struct;
+a. (4) (6)-(8) b. (1)-(2)-(5)-(6)-(8) c. (1)-(3)-(5)-(7) /d. (1)-(2)-(6) [cite: 83, 84, 85, 86, 88, 89, 91, 92, 94, 95, 97, 98, 100, 101, 103, 104, 106, 107, 109, 110, 111]
+
+Câu 14. Cho chương trình sau, cấu trúc lựa chọn (switch từ dòng 6 đến dòng 12) đã được viết tốt chưa?
+#include <stdio.h>
+int main () {
+    float num1, num2;
+    char op;
+    printf ("Nhap vao mot bieu thuc: ");
+    scanf ("%f %c %f", &num1, &op, &num2);
+    switch (op) {
+        case '+': printf ("%.2f\n", num1+num2); break;
+        case '-': printf ("%.2f\n", num1-num2); break;
+        case '*': printf ("%.2f\n", num1*num2); break;
+        case '/': printf ("%.2f\n", num1/num2); break;
+    }
+    return 0;
+}
+a. Rất hoàn hảo /b. Chưa tốt vì thiếu trường hợp default c. Chưa tốt vì thiếu câu lệnh break d. Chưa tốt vì thiếu trường hợp default và kiểm tra chia cho 0 [cite: 112, 113, 114, 115, 117]
+
+Câu 15. Định dạng nào sau đây dùng để hiển thị số nguyên hệ 16?
+a. %d b. %i /c. %x d. %u [cite: 118, 121, 123, 124, 126]
+
+Câu 16. Giá trị cho biểu thức 5 > 1 là bao nhiêu?
+/a. 1 b. -1 c. 0 d. Tất cả đều sai [cite: 125, 127, 128, 129]
+
+Câu 17. Trong C, biểu thức 5/10*10 có giá trị bằng bao nhiêu?
+/a. 0 b. 5 c. 10 d. một giá trị khác [cite: 130, 131, 132, 133, 134]
+
+Câu 18. Vòng lặp nào trong C sẽ kết thúc khi điều kiện lặp là sai?
+/a. for b. do...while c. while d. Tất cả đều sai [cite: 135, 136, 137, 141, 142]
+
+Câu 19. Kết quả của chương trình sau là gì?
+#include <stdio.h>
+int main () {
+    char c = 95;
+    c += 10;
+    printf("%d", c);
+    return 0;
+}
+/a. 105 b. Báo lỗi khi biên dịch c. i d. Tất cả các câu trên đều sai [cite: 138, 139, 140, 143, 144, 145, 146, 147, 148, 149, 152]
+
+Câu 20. Định dạng nào sau đây dùng để in ra một chuỗi ký tự?
+/a. "%s" b. "%f" c. "%c" d. "%x" [cite: 150, 151, 153, 154, 155]
+
+Câu 21. Cho biết thứ tự thực hiện các phép toán trong C:
+a. + - * / b. * - / + /c. * / + - d. / + * - [cite: 156, 157, 158, 159, 160]
+
+Nội dung 2: Kiểu mảng
+
+Câu 22. Kết xuất của chương trình này?
+void main()
+{
+    int x[] = {10, 20, 30, 40, 50};
+    printf ("\n%d %d %d %d %d", x[4], 3[x], x[2], 1[x], x[0]);
+}
+a. Xảy ra lỗi /b. 50 40 30 20 10 c. 10 20 30 40 50 d. Không có kết quả nào trên đây là đúng [cite: 162, 163, 164, 166, 167, 168, 169, 170, 173]
+
+Câu 23. Trong C khi truyền một mảng như là một tham số đầu vào của một hàm thì tham số được truyền thực sự là gì?
+a. Giá trị của các phần tử trong mảng b. Phần tử đầu tiên của mảng /c. Địa chỉ cơ sở của mảng d. Địa chỉ của phần tử cuối cùng của mảng [cite: 171, 172, 173, 174, 176]
+
+Câu 24. Điều gì sẽ xảy ra trong một chương trình C nếu gán một giá trị cho một phần tử của mảng mà chỉ số vượt quá kích thước của mảng?
+a. Phần tử sẽ được đặt giá trị là 0 b. Trình biên dịch sẽ tạo ra một thông báo lỗi /c. Chương trình có thể bị lỗi thực thi hoặc ghi đè dữ liệu quan trọng d. Kích thước của mảng phải được phát triển phù hợp [cite: 175, 177, 178, 179, 180, 182]
+
+Câu 25. Giả sử ma trận A = {{11, -12, 45, 27}, {39, 10, 7, 6}, {21, -23, 0, 84}, {56, -98, 100, 73}}. Xác định ma trận A sau khi chạy đoạn chương trình sau:
+int t;
+for (int i=0; i<N; i++) {
+    t = a[i][i];
+    a[i][i] = a[i][N-i-1];
+    a[i][N-i-1] = t;
+}
+a. A = {{11, -12, 45, 27}, {39, 10, 7, 6}, {21, 23, 0, 84}, {56, -98, 100, 73}}
+/b. A = {{27, -12, 45, 11}, {39, 7, 10, 6}, {21, 0, -23, 84}, {73, -98, 100, 56}}
+c. A = {{11, 39, 21, 56}, {-12, 10, -23, -98}, {45, 7, 0, 100}, {27, 6, 84, 56}}
+d. A = {{27, 39, 21, 73}, {-12, 7, 0, -98}, {45, 10, -23, 100}, {11, 6, 84, 56}} [cite: 181, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195]
+
+Câu 26. Xác định những phát biểu đúng về mảng một chiều:
+1. Mảng là tập hợp các phần tử có cùng một kiểu dữ liệu.
+2. Mảng là tập hợp các phần tử có các kiểu dữ liệu khác nhau.
+3. Các phần tử trong mảng được lưu trữ nối tiếp nhau trong bộ nhớ (chỉ số từ 1 đến N).
+4. Các phần tử trong mảng được lưu trữ nối tiếp nhau trong bộ nhớ (chỉ số từ 0 đến N-1).
+5. Kích thước vùng nhớ được cấp phát cho mảng có N phần tử là: N.
+6. Kích thước vùng nhớ được cấp phát cho mảng có N phần tử là: N * sizeof(kiểu phần tử).
+a. 1, 3, 5 b. 2, 3, 6 c. 2, 4, 5 /d. 1, 4, 6 [cite: 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 210]
+
+Câu 27. Xét đoạn chương trình sau:
+#include<stdio.h>
+int main() {
+    int a[10], i, M=0, K=0;
+    for(i=0; i<10; i++) scanf("%d", &a[i]);
+    for(i=0; i<10; i++)
+        if(a[i] > 0) {
+            K++;
+            M = M + a[i];
+        }
+    if(K > 0) M = M / K;
+    return 0;
+}
+Biến M mang ý nghĩa gì?
+a. Trung bình cộng các phần tử trong mảng /b. Trung bình cộng các phần tử dương trong mảng c. Tổng các phần tử dương trong mảng d. Cả a, b, c đều sai [cite: 209, 211, 212, 213, 214, 215, 216, 217, 218, 219, 221, 222, 224, 225, 226, 230, 231]
+
+Câu 28. Kết quả nào đúng khi thực hiện hàm FindX bên dưới với a[] = {-3, 15, 15, -3}, n = 4, x = 15?
+int FindX(int a[], int n, int x)
+{
+    int i;
+    for (i = n - 1; i >= 0; i--) if (a[i] == x) return (i);
+    return (-1);
+}
+a. -1 b. 1 /c. 2 d. 3 [cite: 232, 233, 234, 235, 236, 237, 239, 249, 250]
+
+Câu 29. Kết quả đoạn chương trình sau là gì?
+#include<stdio.h>
+int main() {
+    int i, a[] = {12, 10, 7, 8};
+    int max = a[0], vt = 0;
+    for (i = 0; i < 4; i++)
+        if (max < a[i]) {
+            max = a[i];
+            vt = i;
+        }
+    printf("%d", vt);
+}
+/a. 0 b. 1 c. 2 d. một kết quả khác [cite: 240, 241, 242, 243, 244, 245, 246, 247, 248, 251, 252, 253, 254]
+
+Câu 30. Kết quả xuất hiện trên màn hình của đoạn chương trình sau là gì?
+#include <stdio.h>
+int main()
+{
+    int a[] = {10, 15, 5, 12, 18, 20};
+    int n = 5;
+    for (int i = n; i >= 0; i--) if (a[i] % 2 != 0)
+        printf("%5d", a[i]);
+    return 0;
+}
+a. 10 15 5 12 18 20 b. 10 12 18 20 c. 20 18 12 10 /d. 5 15 [cite: 255, 256, 258, 261, 263, 264, 265, 267, 268, 269, 270, 272]
+
+Câu 31. Cho đoạn chương trình sau:
+int j = n - 1;
+for(int i = 0; i < n; i++)
+    if (a[i] < a[j]) {
+        int Tam = a[i];
+        a[i] = a[j];
+        a[j] = Tam;
+    }
+Cho biết ngay sau khi thực hiện đoạn chương trình trên thì:
+/a. Mảng a có a[n-1] là phần tử nhỏ nhất b. Mảng a có thứ tự giảm dần c. Mảng a có a[n-1] là phần tử lớn nhất d. Mảng a có thứ tự tăng dần [cite: 271, 273, 274, 275, 277, 278, 279, 281, 282, 283, 286]
+
+Nội dung 3: Kiểu chuỗi ký tự
+
+Câu 32. Các hàm của kiểu chuỗi nào sau đây là không hợp lệ?
+a. strcat /b. strcut c. strnset d. strlen [cite: 287, 288, 289, 290, 291]
+
+Câu 33. Hàm strcpy (s1, s2) có nghĩa là gì?
+a. Chép s1 vào s2 /b. Chép s2 vào s1 c. Ghép s2 vào s1 d. Không có kết quả nào trên đây là đúng [cite: 292, 293, 294, 295, 296]
+
+Câu 34. Kết quả xuất ra là gì?
+void main ()
+{
+    char a[] = "CANTHO";
+    a++;
+    printf("\n %s", a);
+}
+/a. Có lỗi xảy ra. b. CANTHO c. ANTHO d. Không có kết quả nào trên đây là đúng [cite: 297, 298, 299, 300, 301, 303, 304, 306, 307]
+
+Câu 35. Ký tự nào sau đây được sử dụng như là ký tự kết thúc chuỗi?
+a. 0 /b. '\0' c. /0 d. Không có kết quả nào trên đây là đúng [cite: 308, 309, 310, 407]
+
+Câu 36. Tập tin tiêu đề (header file) cần thiết cho hàm strcpy()?
+/a. string.h b. strings.h c. files.h d. stdio.h [cite: 312, 313, 314, 315, 316, 324]
+
+Câu 37. Hàm nào dưới đây được sử dụng để tìm xuất hiện đầu tiên của một chuỗi trong một chuỗi khác?
+a. strchr() b. strrchr() /c. strstr() d. strnset() [cite: 317, 318, 320, 321, 322]
+
+Câu 38. Để sử dụng được hàm toupper(char c) ta phải khai báo sử dụng thư viện nào?
+a. string.h b. stdio.h /c. ctype.h d. conio.h [cite: 323, 324, 326, 327, 328]
+
+Câu 39. Kết quả trả về của hàm stricmp("abc","ABC") bằng bao nhiêu?
+/a. 0 b. 32 c. -1 d. 1 [cite: 329, 330, 331, 332]
+
+Câu 40. Để khai báo một biến kiểu chuỗi chứa giá trị là “hello”, ta có thể thực hiện khai báo nào?
+a. char s[6] = {'h','e','l','l','o','\0'}; b. char s[6] = "hello"; c. char s[] = "hello"; /d. Cả a, b, c đều đúng [cite: 333, 335, 336, 337]
+
+Câu 41. Cho đoạn chương trình:
+char *s1 = strdup("Hello");
+char *s2 = strdup("World");
+s1 = s2;
+printf("s1=%s\n", s1);
+strcpy(s2, "Hi");
+printf("s1=%s\n", s1);
+Kết quả trên màn hình là:
+a. s1=Hello, s1=World b. s1=World, s1=World /c. s1=World, s1=Hi d. s1=Hello, s1=Hi [cite: 338, 340, 341, 342, 343, 344, 345, 346, 347, 351, 352, 353]
+
+Câu 42. Giá trị hằng chuỗi D:\Data được viết trong C:
+a. "D:\Data" b. "D:\Data" /c. "D:\\Data" d. Tất cả đều sai [cite: 348, 349, 350, 355]
+
+Câu 43. Kết quả trên màn hình của chương trình sau là gì?
+#include<stdio.h>
+#include<string.h>
+int main() {
+    char s[30] = "ABCDEF";
+    int n = strlen(s), i;
+    for(i=0; i<n/2; i++) s[i] = s[n-i-1];
+    puts(s);
+    return 0;
+}
+a. ABCDEF /b. FEDDEF c. FEDCBA d. DEFABC [cite: 355, 356, 357, 358, 359, 360, 361, 362, 363, 366, 367, 368]
+
+Câu 44. Cho biết kết quả trên màn hình của chương trình sau:
+#include<stdio.h>
+#include<ctype.h>
+#include<string.h>
+int main() {
+    char S[30] = "abCDe";
+    for(int i=0; i<strlen(S); i++) S[i] = tolower(S[i]);
+    puts(S);
+    return 0;
+}
+/a. abcde b. ABCDE c. abCDe d. AbcdE [cite: 369, 370, 371, 372, 373, 374, 375, 377, 380, 381, 382]
+
+Câu 45. Hãy xác định kết quả của chương trình sau:
+#include <stdio.h>
+#include <string.h>
+int main () {
+    char str1[] = "Hoc sinh hoc mon Sinh";
+    char str2[20];
+    strncpy(str2, strstr(strlwr(str1), "hoc"), 8);
+    str2[8] = '\0';
+    printf ("str2: %s\n", str2);
+    return 0;
+}
+a. str2: Hoc sinh b. str2: hoc sinh /c. str2: hoc sinh d. str2: hoc mon Sinh [cite: 383, 384, 385, 386, 387, 388, 390, 391, 392, 393, 394]
+
+Câu 46. Để nhập từ bàn phím chuỗi “Dai hoc Can Tho” vào biến chuỗi str, ta có thể dùng hàm:
+a. puts(str) b. scanf("%s", str) c. scanf("%c", str) /d. gets(str) [cite: 395, 396, 397, 398, 399, 403]
+
+Câu 47. Trong C, chuỗi ký tự kết thúc bằng ký tự nào?
+a. '\n' b. '\t' /c. '\0' d. '\b' [cite: 400, 401, 402, 404, 405, 407]
+
+Câu 48. Hàm nào sau đây dùng để in một chuỗi ký tự ra màn hình?
+a. get() b. fputs() /c. puts() d. putc() [cite: 406, 408, 409, 410, 412]
+
+Câu 49. Chương trình sau sẽ in ra kết quả gì?
+void main() {
+    char arr[11] = "Lap trinh can ban";
+    printf("%s", arr);
+}
+/a. Lap trinh b. Lap trinh can ban c. Lỗi thực thi d. Tất cả đều sai [cite: 411, 413, 414, 415, 417, 419, 420]
+
+Câu 50. Cho biết kết quả thực hiện của chương trình: printf("%d\n", strlen("123456"));
+/a. 6 b. 7 c. Lỗi biên dịch d. Tất cả đều sai [cite: 421, 422, 423, 424, 426, 430, 431, 432]
+
+Nội dung 4: Kiểu cấu trúc
+
+Câu 51. Ý nghĩa của toán tử mũi tên trong a->b là?
+/a. (*a).b b. a.(*b) c. a.b d. Không có kết quả nào trên đây là đúng [cite: 434, 435, 436, 437, 438]
+
+Câu 52. Kích thước của kiểu cấu trúc sau đây là bao nhiêu byte?
+struct point { int x; int y, z; };
+/a. 6 (với int 2 byte) b. 2 c. 4 d. Không có kết quả nào đúng [cite: 440, 441, 442, 443, 444]
+
+Câu 53. Cho nhanvien nv; để truy xuất thành phần hoten ta dùng:
+a. nhanvien.hoten /b. nv.hoten c. nv->hoten d. Không có kết quả đúng [cite: 445, 452, 453, 454, 457]
+
+Câu 54. Giả sử struct Diem2D *Diem1; cách viết nào sau đây là tương đương?
+a. Diem1.X và Diem1->X b. (*Diem1).X và Diem1.X c. *Diem1.X và Diem1->X /d. (*Diem1).X và Diem1->X [cite: 455, 456, 458, 459, 460, 465, 466]
+
+Câu 55. Đoạn lệnh khai báo kiểu cấu trúc dùng từ khóa typedef thường đặt ở đâu?
+/a. Đặt ngoài hàm main() b. Đặt trong hàm main() c. Đặt ở vị trí bất kỳ d. Đặt trong chương trình con [cite: 461, 462, 463, 464, 467, 468, 469]
+
+Câu 56. Để khai báo một biến có kiểu phân số (tử và mẫu), ta dùng khai báo nào?
+a. Cách 1 b. Cách 2 và 3 c. Cách 1 và 2 /d. Cả 3 cách [cite: 470, 471, 472, 473, 474, 480, 484, 485, 486]
+
+Câu 57. Để truy xuất DiemTB của học viên thứ 2 (ds[1]):
+a. ds[1]->DiemTB b. &(ds[1]->DiemTB) c. (ds+2).DiemTB /d. ds[1].DiemTB [cite: 487, 489, 492, 493, 494, 495, 497, 498, 502]
+
+Nội dung 5: Kiểu con trỏ
+
+Câu 58. Cho câu lệnh int **x; có nghĩa là:
+a. x là một số nguyên /b. x là một con trỏ chỉ đến một con trỏ khác c. x không phải con trỏ d. Không có kết quả đúng [cite: 500, 501, 512, 513]
+
+Câu 59. Hàm nào sẽ cấp phát lại không gian bộ nhớ?
+/a. realloc() b. alloc() c. malloc() d. calloc() [cite: 503, 504, 514]
+
+Câu 60. Khai báo sau đây có ý nghĩa là gì: int (*p)[20];
+a. p là một mảng con trỏ b. p là một mảng có 20 số nguyên /c. p là một con trỏ trỏ đến mảng 20 số nguyên d. p là một hàm [cite: 505, 506, 508, 516]
+
+Câu 61. Kết hợp hai lệnh sau: char *p; p=(char*)malloc(200);
+a. char p = *malloc(200); /b. char *p = (char*)malloc(200); c. char *p = (char)malloc(200); d. Tất cả đều sai [cite: 509, 510, 511, 517, 519]
+
+Câu 62. Nếu một biến là con trỏ trỏ đến cấu trúc, toán tử nào dùng để truy xuất thành viên?
+a. . b. & c. * /d. -> [cite: 520, 521, 522, 523, 535]
+
+Câu 63. Kết quả chương trình: int *p; *p=10; printf("%d",*p);
+a. 10 b. 0 /c. Lỗi thực thi do chưa cấp phát bộ nhớ d. Cả 3 đều sai [cite: 524, 527, 528, 529, 530, 533, 537, 538, 539]
+
+Câu 64. Kết quả chương trình: int *p; p=(int*)malloc(2); *p=10; printf("%d",*p);
+/a. 10 b. 0 c. Báo lỗi d. Cả 3 câu đều sai [cite: 540, 547, 548, 549, 550, 553, 554, 555]
+
+Câu 65. Nhận xét về chương trình sử dụng gets(str) với char *str chưa cấp phát:
+a. Hoàn hảo b. Thiếu free(str) /c. Lỗi nghiêm trọng do chưa cấp phát bộ nhớ d. Sai cú pháp [cite: 556, 559, 561, 567, 572]
+
+Câu 66. Có thể truy xuất phần tử thứ i của mảng a qua con trỏ p=a bởi:
+a. &(p+i) /b. *(p+i) c. p+i d. p+&i [cite: 568, 569, 570, 573, 574, 575, 578]
+
+Nội dung 6: Kiểu tập tin
+
+Câu 67. Nếu tập tin chứa “Thanh pho Can Tho\r\n" thì hàm fgets(s,...) sẽ đọc vào s:
+a. Thanh pho Can Tho b. Thanh pho Can Tho\r /c. Thanh pho Can Tho\n\0 d. Tất cả đều sai [cite: 580, 581, 583, 584, 586]
+
+Câu 68. Đọc một ký tự duy nhất từ bàn phím với hàm nào?
+a. printf() b. scanf() c. puts() /d. getchar() [cite: 585, 586, 590, 592]
+
+Câu 69. Trong lệnh f = fopen("vanban.txt", "r"); f chỉ đến gì?
+a. Ký tự đầu tiên b. Tên tập tin /c. Một cấu trúc chứa thông tin quản lý tập tin d. Nội dung tập tin [cite: 587, 594, 596, 598, 599, 600]
+
+Câu 70. Từ khóa quay về từ hàm được gọi là?
+a. switch b. goto c. go back /d. return [cite: 602, 603, 604, 605]
+
+Câu 71. Chương trình gọi main() đệ quy sẽ in ra "Hau Giang" bao nhiêu lần?
+/a. Không xác định (đến khi tràn stack) b. 32767 lần c. 65535 lần d. 1 lần [cite: 605, 606, 607, 609, 610, 612, 613, 615]
+
+Câu 72. Chế độ nào mở tập tin văn bản để ghi và xóa nội dung cũ nếu đã tồn tại?
+a. wb /b. w c. a d. ab [cite: 614, 615, 616, 619, 635]
+
+Câu 73. Ý nghĩa đoạn code mở f1("BaiHat.txt","rt") và f2("BaiCa.txt","wt") rồi sao chép:
+a. Tạo mới f2 và ghi dữ liệu rác b. Xóa nội dung f1 /c. Tạo mới f2 có nội dung giống f1 d. Cả a, b đều đúng [cite: 617, 621, 622, 623, 624, 625, 626, 627, 636, 637, 638, 640]
+
+Câu 74. Khi xây dựng một hàm thì luôn luôn phải có:
+a. Tên hàm b. Kiểu trả về c. Tham số /d. Cả a và b đều đúng [cite: 641, 642, 643, 644, 645]
