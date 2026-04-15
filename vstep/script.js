@@ -267,13 +267,28 @@ function clearHistory() {
     }
 }
 
-// ===== QUIZ LIBRARY LOGIC =====
 function loadQuizLibrary() {
     try {
         const stored = localStorage.getItem('quizLibrary');
         if (stored) {
             state.quizLibrary = JSON.parse(stored);
+        } else {
+            state.quizLibrary = [];
         }
+        
+        if (typeof DEFAULT_QUIZ_PAYLOAD !== 'undefined') {
+            const hasDeOn = state.quizLibrary.some(q => q.title === "Đề ôn lập trình CB.");
+            if (!hasDeOn) {
+                state.quizLibrary.push({
+                    id: 'default-de-on-cb',
+                    title: 'Đề ôn lập trình CB.',
+                    content: DEFAULT_QUIZ_PAYLOAD,
+                    date: Date.now()
+                });
+                localStorage.setItem('quizLibrary', JSON.stringify(state.quizLibrary));
+            }
+        }
+
         renderQuizLibrary();
     } catch (e) {
         console.error("Failed to load quiz library.", e);
@@ -545,6 +560,9 @@ function shuffleArray(array) {
 
 function replaceLinksToImages(text) {
     if (!text) return text;
+    // Escape HTML first to prevent code snippets like <stdio.h> from being rendered as invisible tags
+    text = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    
     var urlPattern = /(http(s)?:\/\/[^\s]+\.(png|jpg|jp2|gif|webp))/ig;
     var replacedText = text.replace(urlPattern, function (url) {
         return '<img src="' + url + '" class="question-img" />';
@@ -614,9 +632,10 @@ function parseQuestions(text) {
         }
 
         // Find where options start loosely by looking for A., /A., B., /B. etc.
-        // Require \s after the dot to avoid matching inside URLs (e.g. 'd.w' in 'upload.wikimedia')
-        const splitIndex = block.search(/\/?(?:A|B|C|D)\.\s/i);
-        if (splitIndex === -1) continue;
+        // Require a word/space boundary before, and \s after the dot to avoid matching inside URLs (e.g. 'd.w' in 'upload.wikimedia')
+        const matchStart = block.match(/(?:^|\s)\/?(?:[A-Z])\.\s/i);
+        if (!matchStart) continue;
+        const splitIndex = matchStart.index + (matchStart[0].match(/^\s/) ? 1 : 0);
 
         const qHeader = block.substring(0, splitIndex).trim();
         // Remove 'Question/Câu X: ' from header
@@ -626,8 +645,9 @@ function parseQuestions(text) {
         let qText = headerMatch[1].trim();
         let optionsHtml = block.substring(splitIndex);
 
-        // Find all options A, B, C, D (case insensitive), capturing the optional '/' prefix
-        const optMatches = [...optionsHtml.matchAll(/(\/?)([A-D])\.\s*(.*?)(?=\/?(?:[A-D])\.\s*|$)/gis)];
+        // Find all options A, B, C, etc., capturing the optional '/' prefix
+        // Use lookbehind for space/start, and lookahead for space/end to ensure we don't match inside URLs
+        const optMatches = [...optionsHtml.matchAll(/(?<=^|\s)(\/?)([A-Z])\.\s+(.*?)(?=\s+\/?(?:[A-Z])\.\s+|$)/gis)];
 
         if (optMatches.length > 0) {
             let correctId = null;
@@ -670,11 +690,11 @@ function parseQuestions(text) {
 
 
 function loadSampleQuestions() {
-    const sampleData = `Câu 1: Thủ đô của Việt Nam là gì?
-A. TP. Hồ Chí Minh
-/B. Hà Nội
-C. Đà Nẵng
-D. Cần Thơ
+    const sampleData = `Câu 1: Các khai báo sau đây, khai báo nào sai quy cách?
+/A. #include<io.h>
+B. #include<stdlib.h>
+C. #include<conio.h>
+D. #include<stdio.h>
 
 Câu 2: Hình ảnh dưới đây là con vật gì?
 https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Cat_August_2010-4.jpg/181px-Cat_August_2010-4.jpg
@@ -733,14 +753,15 @@ function validateImportArea(skipStatusUpdate = false) {
             continue;
         }
 
-        const splitIndex = block.search(/\/?(?:A|B|C|D)\.\s/i);
-        if (splitIndex === -1) {
+        const matchStart = block.match(/(?:^|\s)\/?(?:[A-Z])\.\s/i);
+        if (!matchStart) {
             allValid = false;
             break;
         }
+        const splitIndex = matchStart.index + (matchStart[0].match(/^\s/) ? 1 : 0);
 
         let optionsHtml = block.substring(splitIndex);
-        const optMatches = [...optionsHtml.matchAll(/(\/?)([A-D])\.\s*(.*?)(?=\/?(?:[A-D])\.\s*|$)/gis)];
+        const optMatches = [...optionsHtml.matchAll(/(?<=^|\s)(\/?)([A-Z])\.\s+(.*?)(?=\s+\/?(?:[A-Z])\.\s+|$)/gis)];
         
         // Validation: must have at least one correct answer
         let hasCorrect = optMatches.some(m => m[1] === '/');
