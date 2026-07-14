@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4efe6">
+  <title>TOEIC Classic Flashcards</title>
+  <link rel="stylesheet" href="style.css?v=20260714">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <span class="brand-mark">T</span>
+        <div>
+          <strong>TOEIC Classic</strong>
+          <small>600 Flashcards</small>
+        </div>
+      </div>
+      <nav class="side-nav" aria-label="Điều hướng chính">
+        <button class="nav-item active" data-view="home">Home</button>
+        <button class="nav-item" data-view="cards">Flashcard</button>
+        <button class="nav-item" data-view="quiz">Quiz</button>
+        <button class="nav-item" data-view="stats">Stats</button>
+        <button class="nav-item" data-view="settings">Settings</button>
+      </nav>
+      <div class="sidebar-note">
+        <span id="libraryStatus">Đang đọc PDF...</span>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">English Learning Desk</p>
+          <h1 id="viewTitle">Dashboard</h1>
+        </div>
+        <button class="icon-button" id="themeToggle" title="Đổi giao diện sáng/tối" aria-label="Đổi giao diện">◐</button>
+      </header>
+
+      <section class="view active" id="homeView" aria-labelledby="viewTitle">
+        <div class="dashboard-grid">
+          <article class="hero-panel">
+            <div>
+              <p class="eyebrow">Hôm nay học gì</p>
+              <h2 id="todayTitle">Ôn tập thông minh</h2>
+              <p id="todayText">App đang phân tích PDF để chuẩn bị thẻ học.</p>
+            </div>
+            <button class="primary-button" data-action="start-due">Bắt đầu</button>
+          </article>
+          <article class="metric-card">
+            <span>Tổng từ</span>
+            <strong id="totalWords">0</strong>
+          </article>
+          <article class="metric-card">
+            <span>Đã học</span>
+            <strong id="learnedWords">0</strong>
+          </article>
+          <article class="metric-card">
+            <span>Cần ôn</span>
+            <strong id="dueWords">0</strong>
+          </article>
+          <article class="metric-card">
+            <span>Chuỗi ngày</span>
+            <strong id="streakDays">0</strong>
+          </article>
+        </div>
+        <div class="section-head">
+          <h2>Tiến trình</h2>
+          <span id="memoryRate">0% nhớ</span>
+        </div>
+        <div class="progress-track"><span id="globalProgress"></span></div>
+        <div class="section-head">
+          <h2>Chủ đề</h2>
+          <select id="homeTopicSelect" class="select"></select>
+        </div>
+        <div class="topic-grid" id="topicGrid"></div>
+      </section>
+
+      <section class="view" id="cardsView">
+        <div class="study-toolbar">
+          <input id="searchInput" class="input" type="search" placeholder="Tìm từ, nghĩa, IPA...">
+          <select id="topicFilter" class="select"></select>
+          <select id="posFilter" class="select"></select>
+          <select id="statusFilter" class="select">
+            <option value="all">Tất cả trạng thái</option>
+            <option value="new">Chưa học</option>
+            <option value="learning">Chưa thuộc</option>
+            <option value="known">Đã thuộc</option>
+            <option value="due">Đến hạn ôn</option>
+            <option value="favorite">Yêu thích</option>
+          </select>
+          <select id="modeFilter" class="select">
+            <option value="ordered">Theo thứ tự</option>
+            <option value="random">Random</option>
+            <option value="hard">Theo mức độ khó</option>
+          </select>
+        </div>
+
+        <div class="card-stage">
+          <button class="ghost-button" id="prevCard" aria-label="Từ trước">‹</button>
+          <div class="flashcard" id="flashcard" tabindex="0" role="button" aria-label="Chạm để lật thẻ">
+            <div class="flashcard-inner">
+              <article class="card-face card-front">
+                <div class="card-meta">
+                  <span id="cardTopic">Topic</span>
+                  <button class="icon-button small" id="favoriteBtn" title="Yêu thích" aria-label="Yêu thích">☆</button>
+                </div>
+                <h2 id="cardWord">Loading</h2>
+                <p id="cardPos" class="part-of-speech"></p>
+                <p id="cardIpa" class="ipa"></p>
+                <button class="speak-button" id="speakBtn">Phát âm</button>
+              </article>
+              <article class="card-face card-back">
+                <div>
+                  <p class="eyebrow">Nghĩa tiếng Việt</p>
+                  <h2 id="cardMeaning"></h2>
+                </div>
+                <div class="example-box">
+                  <p id="cardExample"></p>
+                  <small id="cardExampleVi"></small>
+                </div>
+                <p id="cardNote" class="note"></p>
+              </article>
+            </div>
+          </div>
+          <button class="ghost-button" id="nextCard" aria-label="Từ tiếp theo">›</button>
+        </div>
+
+        <div class="card-footer">
+          <span id="cardCounter">0 / 0</span>
+          <div class="srs-actions">
+            <button data-grade="again">Again</button>
+            <button data-grade="hard">Hard</button>
+            <button data-grade="good">Good</button>
+            <button data-grade="easy">Easy</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="view" id="quizView">
+        <div class="quiz-layout">
+          <article class="quiz-panel">
+            <div class="quiz-head">
+              <span id="quizType">Chọn nghĩa</span>
+              <strong id="quizTimer">00:00</strong>
+            </div>
+            <h2 id="quizPrompt">Bấm bắt đầu để kiểm tra.</h2>
+            <div id="quizOptions" class="quiz-options"></div>
+            <input id="quizTextAnswer" class="input hidden" autocomplete="off" placeholder="Nhập đáp án">
+            <div class="quiz-actions">
+              <button class="primary-button" id="startQuiz">Bắt đầu</button>
+              <button class="secondary-button" id="submitQuiz">Trả lời</button>
+              <button class="secondary-button" id="listenQuiz">Nghe</button>
+            </div>
+          </article>
+          <aside class="score-panel">
+            <span>Điểm</span>
+            <strong id="quizScore">0</strong>
+            <span>Câu</span>
+            <strong id="quizCount">0 / 10</strong>
+            <p id="quizFeedback"></p>
+          </aside>
+        </div>
+      </section>
+
+      <section class="view" id="statsView">
+        <div class="stats-grid">
+          <article class="metric-card"><span>Số lần xem</span><strong id="totalViews">0</strong></article>
+          <article class="metric-card"><span>Đúng</span><strong id="totalCorrect">0</strong></article>
+          <article class="metric-card"><span>Sai</span><strong id="totalWrong">0</strong></article>
+          <article class="metric-card"><span>Thời gian học</span><strong id="studyTime">0m</strong></article>
+        </div>
+        <div class="chart-panel">
+          <div class="section-head"><h2>Biểu đồ tiến độ</h2><span>7 ngày gần nhất</span></div>
+          <canvas id="progressChart" width="900" height="320" aria-label="Biểu đồ tiến độ"></canvas>
+        </div>
+        <div class="history-panel">
+          <div class="section-head"><h2>Lịch sử Quiz</h2><span id="historyCount">0 lượt</span></div>
+          <div id="quizHistory"></div>
+        </div>
+      </section>
+
+      <section class="view" id="settingsView">
+        <div class="settings-grid">
+          <label class="setting-row">PDF nguồn
+            <input id="pdfUpload" class="input" type="file" accept="application/pdf">
+          </label>
+          <label class="setting-row">Giọng đọc
+            <select id="voiceSelect" class="select"></select>
+          </label>
+          <label class="setting-row">Accent
+            <select id="accentSelect" class="select">
+              <option value="en-US">Anh Mỹ</option>
+              <option value="en-GB">Anh Anh</option>
+            </select>
+          </label>
+          <label class="setting-row">Speed <span id="rateValue">1.00</span>
+            <input id="rateInput" type="range" min="0.6" max="1.4" step="0.05" value="1">
+          </label>
+          <label class="setting-row">Pitch <span id="pitchValue">1.00</span>
+            <input id="pitchInput" type="range" min="0.6" max="1.4" step="0.05" value="1">
+          </label>
+          <button class="secondary-button" id="resetProgress">Xóa tiến trình học</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <nav class="bottom-nav" aria-label="Điều hướng mobile">
+    <button class="nav-item active" data-view="home">Home</button>
+    <button class="nav-item" data-view="cards">Cards</button>
+    <button class="nav-item" data-view="quiz">Quiz</button>
+    <button class="nav-item" data-view="stats">Stats</button>
+    <button class="nav-item" data-view="settings">Set</button>
+  </nav>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js?v=20260714"></script>
+</body>
+</html>
