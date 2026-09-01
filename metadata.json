@@ -1,0 +1,8 @@
+{
+  "name": "TOEIC Flashcards & VSTEP Quiz",
+  "description": "Comprehensive learning platform featuring TOEIC Classic Flashcards with Spaced Repetition (SRS) & PDF processing, alongside VSTEP multiple-choice speedrun examination test suite.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

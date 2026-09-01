@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Study Portal - TOEIC & Trắc Nghiệm</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-blue-500 selection:text-white">
+  <!-- Background Glow -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden opacity-30">
+    <div class="absolute -top-40 -left-40 w-96 h-96 bg-blue-500 rounded-full blur-[120px]"></div>
+    <div class="absolute top-1/2 -right-40 w-96 h-96 bg-indigo-500 rounded-full blur-[120px]"></div>
+  </div>
+
+  <div class="relative z-10 flex-grow flex flex-col justify-between max-w-5xl mx-auto w-full px-6 py-12">
+    <!-- Header -->
+    <header class="text-center space-y-3 mb-10">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-950/80 border border-blue-800/60 text-blue-400 text-xs font-semibold tracking-wide uppercase">
+        <i class="ph ph-sparkle text-sm"></i> HuyCast Study Suite
+      </div>
+      <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-white">
+        Hệ Thống Học Tập & Luyện Thi
+      </h1>
+      <p class="text-slate-400 text-sm sm:text-base max-w-xl mx-auto">
+        Tuyển tập ứng dụng hỗ trợ học từ vựng TOEIC với phương pháp Spaced Repetition và hệ thống luyện thi trắc nghiệm tốc độ cao.
+      </p>
+    </header>
+
+    <!-- Apps Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 my-auto">
+      
+      <!-- Card 1: TOEIC Flashcards -->
+      <a href="/flashcard/" class="group block p-8 rounded-2xl bg-slate-800/80 border border-slate-700 hover:border-amber-500/50 hover:bg-slate-800 transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-amber-500/10 hover:-translate-y-1 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl group-hover:bg-amber-500/20 transition-all"></div>
+        <div class="w-14 h-14 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">
+          <i class="ph-bold ph-cards"></i>
+        </div>
+        <div class="flex items-center gap-2 text-xs font-bold text-amber-400 uppercase tracking-wider mb-2">
+          <span>Học Từ Vựng</span>
+          <span class="w-1 h-1 rounded-full bg-amber-400"></span>
+          <span>600 Words</span>
+        </div>
+        <h2 class="text-2xl font-bold text-white mb-3 group-hover:text-amber-300 transition-colors">
+          TOEIC Classic Flashcards
+        </h2>
+        <p class="text-slate-400 text-sm leading-relaxed mb-6">
+          Học 600 từ vựng TOEIC căn bản qua PDF trực tiếp, phương pháp lặp lại ngắt quãng (SRS), phát âm giọng đọc chuẩn (TTS) và kiểm tra Quiz.
+        </p>
+        <div class="flex items-center text-sm font-semibold text-amber-400 group-hover:translate-x-1 transition-transform">
+          Mở ứng dụng Flashcard <i class="ph-bold ph-arrow-right ml-2"></i>
+        </div>
+      </a>
+
+      <!-- Card 2: VSTEP Quiz System -->
+      <a href="/vstep/" class="group block p-8 rounded-2xl bg-slate-800/80 border border-slate-700 hover:border-blue-500/50 hover:bg-slate-800 transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-1 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"></div>
+        <div class="w-14 h-14 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">
+          <i class="ph-bold ph-exam"></i>
+        </div>
+        <div class="flex items-center gap-2 text-xs font-bold text-blue-400 uppercase tracking-wider mb-2">
+          <span>Luyện Thi & Speedrun</span>
+          <span class="w-1 h-1 rounded-full bg-blue-400"></span>
+          <span>Tự Luận / Trắc Nghiệm</span>
+        </div>
+        <h2 class="text-2xl font-bold text-white mb-3 group-hover:text-blue-300 transition-colors">
+          Web Làm Trắc Nghiệm
+        </h2>
+        <p class="text-slate-400 text-sm leading-relaxed mb-6">
+          Nền tảng thi trắc nghiệm trực tuyến: hỗ trợ nhập câu hỏi tự do bằng AI, tùy chỉnh thời gian, xáo trộn đề, chế độ học tập và lưu kỷ lục (Personal Best).
+        </p>
+        <div class="flex items-center text-sm font-semibold text-blue-400 group-hover:translate-x-1 transition-transform">
+          Mở ứng dụng Trắc Nghiệm <i class="ph-bold ph-arrow-right ml-2"></i>
+        </div>
+      </a>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-12 text-center text-slate-500 text-xs">
+      <p>Phát triển bởi HuyCast &bull; Tương thích mọi thiết bị di động & máy tính</p>
+    </footer>
+  </div>
+</body>
+</html>
