@@ -12,6 +12,7 @@ const state = {
     isRandomized: true,
     isRandomizedOptions: true,
     isLearningMode: false,
+    questionCountLimit: null, // null = use all questions
     customQuestions: null,
 
     isTestActive: false,
@@ -54,7 +55,12 @@ const DOM = {
         closeEditorBtn: document.getElementById('close-editor-btn'),
         historySortSelect: document.getElementById('history-sort-select'),
         clearHistoryBtn: document.getElementById('clear-history-btn'),
-        historyTableBody: document.getElementById('history-table-body')
+        historyTableBody: document.getElementById('history-table-body'),
+        questionCountSection: document.getElementById('question-count-section'),
+        totalQuestionsLabel: document.getElementById('total-questions-label'),
+        qcountMinus: document.getElementById('qcount-minus'),
+        qcountPlus: document.getElementById('qcount-plus'),
+        qcountSetting: document.getElementById('qcount-setting')
     },
     quiz: {
         timerDisplay: document.getElementById('timer-display'),
@@ -111,6 +117,11 @@ function init() {
     DOM.home.randomizeToggle.addEventListener('change', (e) => state.isRandomized = e.target.checked);
     DOM.home.randomizeOptionsToggle.addEventListener('change', (e) => state.isRandomizedOptions = e.target.checked);
     if(DOM.home.learningModeToggle) DOM.home.learningModeToggle.addEventListener('change', (e) => state.isLearningMode = e.target.checked);
+    DOM.home.qcountMinus.addEventListener('click', () => adjustQuestionCount(-5));
+    DOM.home.qcountPlus.addEventListener('click', () => adjustQuestionCount(5));
+    DOM.home.qcountSetting.addEventListener('change', handleQuestionCountInput);
+    DOM.home.qcountSetting.addEventListener('focus', function() { if (this.value === 'All') this.value = ''; });
+    DOM.home.qcountSetting.addEventListener('blur', function() { if (this.value.trim() === '' || this.value === 'All') { state.questionCountLimit = null; this.value = 'All'; } });
     DOM.home.previewBtn.addEventListener('click', openQuizEditor);
 
     if (DOM.home.loadSampleBtn) DOM.home.loadSampleBtn.addEventListener('click', loadSampleQuestions);
@@ -578,6 +589,68 @@ function adjustTimer(change) {
     DOM.home.timerSetting.value = state.timerSettingMinutes;
 }
 
+function adjustQuestionCount(change) {
+    const totalAvailable = state.customQuestions ? state.customQuestions.length : 0;
+    if (totalAvailable === 0) return;
+
+    if (state.questionCountLimit === null) {
+        // Currently "All" — only respond to minus
+        if (change < 0) {
+            state.questionCountLimit = totalAvailable + change;
+        } else {
+            return; // Already at max
+        }
+    } else {
+        state.questionCountLimit += change;
+    }
+
+    if (state.questionCountLimit >= totalAvailable || state.questionCountLimit < 1) {
+        state.questionCountLimit = null; // Reset to All
+    } else if (state.questionCountLimit < 1) {
+        state.questionCountLimit = 1;
+    }
+
+    DOM.home.qcountSetting.value = state.questionCountLimit === null ? 'All' : state.questionCountLimit;
+}
+
+function handleQuestionCountInput(e) {
+    const val = e.target.value.trim();
+    const totalAvailable = state.customQuestions ? state.customQuestions.length : 0;
+
+    if (val === '' || val.toLowerCase() === 'all') {
+        state.questionCountLimit = null;
+        e.target.value = 'All';
+        return;
+    }
+
+    let num = parseInt(val);
+    if (isNaN(num) || num < 1) {
+        num = 1;
+    }
+    if (num >= totalAvailable) {
+        state.questionCountLimit = null;
+        e.target.value = 'All';
+    } else {
+        state.questionCountLimit = num;
+        e.target.value = num;
+    }
+}
+
+function updateQuestionCountUI() {
+    const totalAvailable = state.customQuestions ? state.customQuestions.length : 0;
+    if (totalAvailable > 0) {
+        DOM.home.questionCountSection.classList.remove('hidden');
+        DOM.home.totalQuestionsLabel.innerText = totalAvailable;
+        // Reset limit if it exceeds new total
+        if (state.questionCountLimit !== null && state.questionCountLimit > totalAvailable) {
+            state.questionCountLimit = null;
+        }
+        DOM.home.qcountSetting.value = state.questionCountLimit === null ? 'All' : state.questionCountLimit;
+    } else {
+        DOM.home.questionCountSection.classList.add('hidden');
+    }
+}
+
 function parseQuestions(text) {
     if (!text) {
         DOM.home.importStatus.innerText = "Please paste some text first.";
@@ -686,6 +759,7 @@ function parseQuestions(text) {
         DOM.home.importStatus.className = "text-xs font-medium text-red-500";
         state.customQuestions = null;
     }
+    updateQuestionCountUI();
 }
 
 
@@ -833,17 +907,19 @@ function startTest() {
         return;
     }
 
-    // Request fullscreen
-    try {
-        if (document.documentElement.requestFullscreen) {
-            document.documentElement.requestFullscreen().catch(err => console.log("Fullscreen error:", err));
-        }
-    } catch (e) { }
+    // Request fullscreen (skip in learning mode)
+    if (!state.isLearningMode) {
+        try {
+            if (document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(err => console.log("Fullscreen error:", err));
+            }
+        } catch (e) { }
 
-    // Delay activation to prevent false positives during transition
-    setTimeout(() => {
-        state.isTestActive = true;
-    }, 1000);
+        // Delay activation to prevent false positives during transition
+        setTimeout(() => {
+            state.isTestActive = true;
+        }, 1000);
+    }
 
     // Deep copy to prevent modifying the original options array if options are shuffled
     let activeQuestions = state.customQuestions.map(q => {
@@ -861,13 +937,17 @@ function startTest() {
         }
     });
 
-    state.questionCount = activeQuestions.length;
-
     if (state.isRandomized) {
-        state.questions = shuffleArray(activeQuestions);
-    } else {
-        state.questions = activeQuestions; // Sequential
+        activeQuestions = shuffleArray(activeQuestions);
     }
+
+    // Apply question count limit (slice after shuffle for random selection)
+    if (state.questionCountLimit !== null && state.questionCountLimit < activeQuestions.length) {
+        activeQuestions = activeQuestions.slice(0, state.questionCountLimit);
+    }
+
+    state.questions = activeQuestions;
+    state.questionCount = activeQuestions.length;
 
     if (state.isRandomizedOptions) {
         state.questions.forEach(q => {
