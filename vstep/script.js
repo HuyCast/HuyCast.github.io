@@ -591,23 +591,29 @@ function adjustTimer(change) {
 
 function adjustQuestionCount(change) {
     const totalAvailable = state.customQuestions ? state.customQuestions.length : 0;
-    if (totalAvailable === 0) return;
+    if (totalAvailable <= 1) return;
 
-    if (state.questionCountLimit === null) {
-        // Currently "All" — only respond to minus
-        if (change < 0) {
-            state.questionCountLimit = totalAvailable + change;
-        } else {
-            return; // Already at max
+    let current = state.questionCountLimit === null ? totalAvailable : state.questionCountLimit;
+
+    let step = change;
+    if (Math.abs(change) === 5) {
+        if (change < 0 && current <= 5) {
+            step = -1;
+        } else if (change > 0 && current < 5) {
+            step = 1;
+        } else if (change < 0 && current % 5 !== 0) {
+            step = -(current % 5);
         }
-    } else {
-        state.questionCountLimit += change;
     }
 
-    if (state.questionCountLimit >= totalAvailable || state.questionCountLimit < 1) {
-        state.questionCountLimit = null; // Reset to All
-    } else if (state.questionCountLimit < 1) {
+    let next = current + step;
+
+    if (next >= totalAvailable) {
+        state.questionCountLimit = null; // Reset to "All"
+    } else if (next < 1) {
         state.questionCountLimit = 1;
+    } else {
+        state.questionCountLimit = next;
     }
 
     DOM.home.qcountSetting.value = state.questionCountLimit === null ? 'All' : state.questionCountLimit;
@@ -651,10 +657,14 @@ function updateQuestionCountUI() {
     }
 }
 
-function parseQuestions(text) {
+function parseQuestions(text, silent = false) {
     if (!text) {
-        DOM.home.importStatus.innerText = "Please paste some text first.";
-        DOM.home.importStatus.className = "text-xs font-medium text-amber-500";
+        if (!silent) {
+            DOM.home.importStatus.innerText = "Please paste some text first.";
+            DOM.home.importStatus.className = "text-xs font-medium text-amber-500";
+        }
+        state.customQuestions = null;
+        updateQuestionCountUI();
         return;
     }
 
@@ -752,11 +762,15 @@ function parseQuestions(text) {
 
     if (parsedQuestions.length > 0) {
         state.customQuestions = parsedQuestions;
-        DOM.home.importStatus.innerText = `Success: ${parsedQuestions.length} questions parsed!`;
-        DOM.home.importStatus.className = "text-xs font-medium text-green-600";
+        if (!silent) {
+            DOM.home.importStatus.innerText = `Success: ${parsedQuestions.length} questions parsed!`;
+            DOM.home.importStatus.className = "text-xs font-medium text-green-600";
+        }
     } else {
-        DOM.home.importStatus.innerText = "Error: Could not parse questions. Check format.";
-        DOM.home.importStatus.className = "text-xs font-medium text-red-500";
+        if (!silent) {
+            DOM.home.importStatus.innerText = "Error: Could not parse questions. Check format.";
+            DOM.home.importStatus.className = "text-xs font-medium text-red-500";
+        }
         state.customQuestions = null;
     }
     updateQuestionCountUI();
@@ -805,6 +819,8 @@ function validateImportArea(skipStatusUpdate = false) {
             DOM.home.importStatus.innerText = "Format: '/X.' for correct answers";
             DOM.home.importStatus.className = "text-xs font-medium text-slate-500 dark:text-slate-400";
         }
+        state.customQuestions = null;
+        updateQuestionCountUI();
         return;
     }
 
@@ -854,10 +870,14 @@ function validateImportArea(skipStatusUpdate = false) {
             DOM.home.importStatus.innerText = `${questionCount} valid question(s). Ready to start!`;
             DOM.home.importStatus.className = "text-xs font-medium text-green-600 dark:text-green-400";
         }
+        // Immediately parse questions and update Question Count selector UI
+        parseQuestions(rawText, true);
     } else {
         DOM.home.startBtn.disabled = true;
         DOM.home.startBtn.classList.add('opacity-50', 'cursor-not-allowed');
         DOM.home.startBtn.classList.remove('hover:bg-blue-700', 'dark:hover:bg-blue-600', 'group');
+        state.customQuestions = null;
+        updateQuestionCountUI();
         if (!skipStatusUpdate) {
             if (questionCount === 0) {
                  DOM.home.importStatus.innerText = "No questions found. Check format.";
@@ -1874,6 +1894,7 @@ function resetToHome() {
     // Refresh PB and History UI on Home
     displayPersonalBestOnHome();
     renderHistory();
+    updateQuestionCountUI();
 
     switchScreen('home');
 }
