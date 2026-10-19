@@ -9,8 +9,8 @@ const state = {
     startTime: null,
     endTime: null,
     timerSettingMinutes: 60,
-    isRandomized: true,
-    isRandomizedOptions: true,
+    isRandomized: false,
+    isRandomizedOptions: false,
     isLearningMode: false,
     questionCountLimit: null, // null = use all questions
     customQuestions: null,
@@ -114,6 +114,8 @@ function init() {
         DOM.home.timerSetting.value = val;
     });
 
+    state.isRandomized = DOM.home.randomizeToggle ? DOM.home.randomizeToggle.checked : false;
+    state.isRandomizedOptions = DOM.home.randomizeOptionsToggle ? DOM.home.randomizeOptionsToggle.checked : false;
     DOM.home.randomizeToggle.addEventListener('change', (e) => state.isRandomized = e.target.checked);
     DOM.home.randomizeOptionsToggle.addEventListener('change', (e) => state.isRandomizedOptions = e.target.checked);
     if(DOM.home.learningModeToggle) DOM.home.learningModeToggle.addEventListener('change', (e) => state.isLearningMode = e.target.checked);
@@ -941,29 +943,45 @@ function startTest() {
         }, 1000);
     }
 
+    // Explicitly sync toggles and question count limit from DOM at start
+    state.isRandomized = DOM.home.randomizeToggle ? DOM.home.randomizeToggle.checked : false;
+    state.isRandomizedOptions = DOM.home.randomizeOptionsToggle ? DOM.home.randomizeOptionsToggle.checked : false;
+    if (DOM.home.qcountSetting) {
+        const qCountVal = DOM.home.qcountSetting.value.trim();
+        if (qCountVal && qCountVal.toLowerCase() !== 'all') {
+            const parsedLimit = parseInt(qCountVal);
+            if (!isNaN(parsedLimit) && parsedLimit > 0) {
+                state.questionCountLimit = parsedLimit;
+            }
+        } else {
+            state.questionCountLimit = null;
+        }
+    }
+
     // Deep copy to prevent modifying the original options array if options are shuffled
     let activeQuestions = state.customQuestions.map(q => {
         if (q.type === 'matching') {
             return {
                 ...q,
-                pairs: [...q.pairs],
-                rightOptions: [...q.pairs].map(p => ({ id: p.rightId, text: p.rightText }))
+                pairs: q.pairs.map(p => ({ ...p })),
+                rightOptions: q.pairs.map(p => ({ id: p.rightId, text: p.rightText }))
             };
         } else {
             return {
                 ...q,
-                options: [...q.options]
+                options: q.options.map(opt => ({ ...opt }))
             };
         }
     });
 
-    if (state.isRandomized) {
-        activeQuestions = shuffleArray(activeQuestions);
-    }
-
-    // Apply question count limit (slice after shuffle for random selection)
+    // 1. Quy tắc thứ tự: Luôn lấy từ trên xuống dưới (vd 10 câu là lấy từ 1 đến 10, 20 là từ 1 đến 20)
     if (state.questionCountLimit !== null && state.questionCountLimit < activeQuestions.length) {
         activeQuestions = activeQuestions.slice(0, state.questionCountLimit);
+    }
+
+    // 2. Nếu BẬT "Randomize Questions", chỉ xáo trộn thứ tự TRONG PHẠM VI các câu hỏi đã chọn (1 đến N)
+    if (state.isRandomized) {
+        activeQuestions = shuffleArray(activeQuestions);
     }
 
     state.questions = activeQuestions;
