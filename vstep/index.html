@@ -120,22 +120,32 @@
                         </div>
                     </div>
 
-                    <!-- Question Count Limit -->
+                    <!-- Question Range & Count Limit -->
                     <div id="question-count-section"
-                        class="flex items-center justify-between pt-4 border-t border-slate-200/60 dark:border-slate-700/60 hidden">
-                        <div>
-                            <h3 class="font-semibold text-slate-800 dark:text-slate-100">Question Count</h3>
-                            <p class="text-xs text-slate-500 dark:text-slate-400">Limit the number of questions (<span id="total-questions-label">0</span> available)</p>
+                        class="pt-4 border-t border-slate-200/60 dark:border-slate-700/60 hidden">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="font-semibold text-slate-800 dark:text-slate-100">Question Range / Count</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">Select range or question limit (<span id="total-questions-label">0</span> available)</p>
+                            </div>
+                            <div
+                                class="flex items-center gap-2 bg-white dark:bg-slate-800 px-2.5 py-2 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                                <button id="qcount-minus"
+                                    class="w-8 h-8 rounded-md bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 flex items-center justify-center font-bold text-lg transition-colors">-</button>
+                                <input type="text" id="qcount-setting"
+                                    class="w-20 sm:w-24 text-center font-semibold text-slate-800 dark:text-slate-100 tabular-nums bg-transparent border-none p-0 focus:ring-0 outline-none text-sm"
+                                    placeholder="vd: 11-20"
+                                    value="All">
+                                <button id="qcount-plus"
+                                    class="w-8 h-8 rounded-md bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 flex items-center justify-center font-bold text-lg transition-colors">+</button>
+                            </div>
                         </div>
-                        <div
-                            class="flex items-center gap-3 bg-white dark:bg-slate-800 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
-                            <button id="qcount-minus"
-                                class="w-8 h-8 rounded-md bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 flex items-center justify-center font-bold text-lg transition-colors">-</button>
-                            <input type="text" id="qcount-setting"
-                                class="w-12 text-center font-semibold text-slate-800 dark:text-slate-100 tabular-nums bg-transparent border-none p-0 focus:ring-0 outline-none"
-                                value="All">
-                            <button id="qcount-plus"
-                                class="w-8 h-8 rounded-md bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 flex items-center justify-center font-bold text-lg transition-colors">+</button>
+                        <!-- Helper instruction for question range / count -->
+                        <div class="mt-2.5 flex items-start gap-2 text-xs text-blue-600/90 dark:text-blue-400/90 bg-blue-50/70 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/40 rounded-lg p-2.5">
+                            <i class="ph-fill ph-info text-sm shrink-0 mt-0.5"></i>
+                            <div>
+                                <span class="font-semibold">Hướng dẫn:</span> Nhập số lượng như <code class="font-mono bg-blue-100/70 dark:bg-blue-800/40 px-1 py-0.5 rounded text-blue-700 dark:text-blue-300">20</code> (làm từ câu 1 đến 20) hoặc khoảng câu hỏi như <code class="font-mono bg-blue-100/70 dark:bg-blue-800/40 px-1 py-0.5 rounded text-blue-700 dark:text-blue-300">11-20</code> (làm từ câu 11 đến 20). Nhập <code class="font-mono bg-blue-100/70 dark:bg-blue-800/40 px-1 py-0.5 rounded text-blue-700 dark:text-blue-300">All</code> để làm toàn bộ.
+                            </div>
                         </div>
                     </div>
 

@@ -12,7 +12,8 @@ const state = {
     isRandomized: false,
     isRandomizedOptions: false,
     isLearningMode: false,
-    questionCountLimit: null, // null = use all questions
+    questionCountLimit: null, // legacy fallback
+    questionRange: null, // null = all questions, or { start: number, end: number }
     customQuestions: null,
 
     isTestActive: false,
@@ -123,7 +124,14 @@ function init() {
     DOM.home.qcountPlus.addEventListener('click', () => adjustQuestionCount(5));
     DOM.home.qcountSetting.addEventListener('change', handleQuestionCountInput);
     DOM.home.qcountSetting.addEventListener('focus', function() { if (this.value === 'All') this.value = ''; });
-    DOM.home.qcountSetting.addEventListener('blur', function() { if (this.value.trim() === '' || this.value === 'All') { state.questionCountLimit = null; this.value = 'All'; } });
+    DOM.home.qcountSetting.addEventListener('blur', function() { 
+        if (this.value.trim() === '' || this.value.toLowerCase() === 'all') { 
+            state.questionRange = null; 
+            this.value = 'All'; 
+        } else {
+            handleQuestionCountInput({ target: this });
+        }
+    });
     DOM.home.previewBtn.addEventListener('click', openQuizEditor);
 
     if (DOM.home.loadSampleBtn) DOM.home.loadSampleBtn.addEventListener('click', loadSampleQuestions);
@@ -591,57 +599,99 @@ function adjustTimer(change) {
     DOM.home.timerSetting.value = state.timerSettingMinutes;
 }
 
+function parseQuestionRangeInput(val, totalAvailable) {
+    if (!val || typeof val !== 'string') return null;
+    const trimmed = val.trim().toLowerCase();
+    if (trimmed === '' || trimmed === 'all') return null;
+
+    // Range format: "11-20", "11 - 20", "11:20", "11 to 20"
+    const rangeMatch = trimmed.match(/^(\d+)\s*(?:-|–|—|to|:)\s*(\d+)$/i);
+    if (rangeMatch) {
+        let s = parseInt(rangeMatch[1], 10);
+        let e = parseInt(rangeMatch[2], 10);
+        if (isNaN(s) || isNaN(e)) return null;
+        if (s > e) [s, e] = [e, s];
+        if (s < 1) s = 1;
+        if (e > totalAvailable) e = totalAvailable;
+        if (s > totalAvailable) s = totalAvailable;
+        if (s === 1 && e >= totalAvailable) return null; // All
+        return { start: s, end: e };
+    }
+
+    // Single number format: "20" -> from 1 to 20
+    const num = parseInt(trimmed, 10);
+    if (!isNaN(num)) {
+        if (num >= totalAvailable) return null; // All
+        const end = Math.max(1, Math.min(num, totalAvailable));
+        return { start: 1, end: end };
+    }
+
+    return null;
+}
+
+function formatQuestionRangeDisplay(range) {
+    if (!range) return 'All';
+    if (range.start === 1) return `${range.end}`;
+    return `${range.start}-${range.end}`;
+}
+
 function adjustQuestionCount(change) {
     const totalAvailable = state.customQuestions ? state.customQuestions.length : 0;
     if (totalAvailable <= 1) return;
 
-    let current = state.questionCountLimit === null ? totalAvailable : state.questionCountLimit;
-
-    let step = change;
-    if (Math.abs(change) === 5) {
-        if (change < 0 && current <= 5) {
-            step = -1;
-        } else if (change > 0 && current < 5) {
-            step = 1;
-        } else if (change < 0 && current % 5 !== 0) {
-            step = -(current % 5);
+    if (state.questionRange === null) {
+        // Currently "All" -> decrease from totalAvailable
+        if (change < 0) {
+            let nextEnd = totalAvailable + change;
+            if (nextEnd < 1) nextEnd = 1;
+            state.questionRange = { start: 1, end: nextEnd };
+        } else {
+            return; // Already at max All
         }
-    }
-
-    let next = current + step;
-
-    if (next >= totalAvailable) {
-        state.questionCountLimit = null; // Reset to "All"
-    } else if (next < 1) {
-        state.questionCountLimit = 1;
+    } else if (state.questionRange.start === 1) {
+        // Single count mode (e.g. 1 to 20)
+        let current = state.questionRange.end;
+        let step = change;
+        if (Math.abs(change) === 5) {
+            if (change < 0 && current <= 5) {
+                step = -1;
+            } else if (change > 0 && current < 5) {
+                step = 1;
+            } else if (change < 0 && current % 5 !== 0) {
+                step = -(current % 5);
+            }
+        }
+        let next = current + step;
+        if (next >= totalAvailable) {
+            state.questionRange = null; // All
+        } else if (next < 1) {
+            state.questionRange = { start: 1, end: 1 };
+        } else {
+            state.questionRange = { start: 1, end: next };
+        }
     } else {
-        state.questionCountLimit = next;
+        // Custom range mode (e.g. 11 to 20)
+        let s = state.questionRange.start;
+        let e = state.questionRange.end;
+        let count = e - s + 1;
+        let step = change;
+        if (Math.abs(change) === 5) {
+            if (change < 0 && count <= 5) step = -1;
+            else if (change > 0 && count < 5) step = 1;
+        }
+        let nextEnd = e + step;
+        if (nextEnd < s) nextEnd = s; // at least 1 question
+        if (nextEnd > totalAvailable) nextEnd = totalAvailable;
+        state.questionRange = { start: s, end: nextEnd };
     }
 
-    DOM.home.qcountSetting.value = state.questionCountLimit === null ? 'All' : state.questionCountLimit;
+    DOM.home.qcountSetting.value = formatQuestionRangeDisplay(state.questionRange);
 }
 
 function handleQuestionCountInput(e) {
-    const val = e.target.value.trim();
     const totalAvailable = state.customQuestions ? state.customQuestions.length : 0;
-
-    if (val === '' || val.toLowerCase() === 'all') {
-        state.questionCountLimit = null;
-        e.target.value = 'All';
-        return;
-    }
-
-    let num = parseInt(val);
-    if (isNaN(num) || num < 1) {
-        num = 1;
-    }
-    if (num >= totalAvailable) {
-        state.questionCountLimit = null;
-        e.target.value = 'All';
-    } else {
-        state.questionCountLimit = num;
-        e.target.value = num;
-    }
+    state.questionRange = parseQuestionRangeInput(e.target.value, totalAvailable);
+    e.target.value = formatQuestionRangeDisplay(state.questionRange);
 }
 
 function updateQuestionCountUI() {
@@ -649,11 +699,15 @@ function updateQuestionCountUI() {
     if (totalAvailable > 0) {
         DOM.home.questionCountSection.classList.remove('hidden');
         DOM.home.totalQuestionsLabel.innerText = totalAvailable;
-        // Reset limit if it exceeds new total
-        if (state.questionCountLimit !== null && state.questionCountLimit > totalAvailable) {
-            state.questionCountLimit = null;
+        // Validate / clamp questionRange against new total
+        if (state.questionRange !== null) {
+            if (state.questionRange.start > totalAvailable) {
+                state.questionRange = null;
+            } else if (state.questionRange.end > totalAvailable) {
+                state.questionRange.end = totalAvailable;
+            }
         }
-        DOM.home.qcountSetting.value = state.questionCountLimit === null ? 'All' : state.questionCountLimit;
+        DOM.home.qcountSetting.value = formatQuestionRangeDisplay(state.questionRange);
     } else {
         DOM.home.questionCountSection.classList.add('hidden');
     }
@@ -680,8 +734,9 @@ function parseQuestions(text, silent = false) {
 
         // Check if it's a matching question (contains ::)
         if (block.includes('::')) {
-            const headerMatch = block.match(/^(?:Question|C[aâ]u)\s+\d+[:\.]\s*(.*)/is);
+            const headerMatch = block.match(/^(?:Question|C[aâ]u)\s+(\d+)[:\.]\s*(.*)/is);
             if (!headerMatch) continue;
+            const origNum = parseInt(headerMatch[1], 10);
             
             const lines = block.split('\n');
             let qTextLines = [];
@@ -709,6 +764,7 @@ function parseQuestions(text, silent = false) {
             if (pairs.length > 0) {
                 parsedQuestions.push({
                     id: i,
+                    originalNumber: origNum,
                     type: 'matching',
                     text: qTextLines.join(' '),
                     pairs: pairs
@@ -724,11 +780,12 @@ function parseQuestions(text, silent = false) {
         const splitIndex = matchStart.index + (matchStart[0].match(/^\s/) ? 1 : 0);
 
         const qHeader = block.substring(0, splitIndex).trim();
-        // Remove 'Question/Câu X: ' from header
-        const headerMatch = qHeader.match(/^(?:Question|C[aâ]u)\s+\d+[:\.]\s*(.*)/is);
+        // Remove 'Question/Câu X: ' from header and extract original number
+        const headerMatch = qHeader.match(/^(?:Question|C[aâ]u)\s+(\d+)[:\.]\s*(.*)/is);
         if (!headerMatch) continue;
+        const origNum = parseInt(headerMatch[1], 10);
 
-        let qText = headerMatch[1].trim();
+        let qText = headerMatch[2].trim();
         let optionsHtml = block.substring(splitIndex);
 
         // Find all options A, B, C, etc., capturing the optional '/' prefix
@@ -754,6 +811,7 @@ function parseQuestions(text, silent = false) {
 
             parsedQuestions.push({
                 id: i,
+                originalNumber: origNum,
                 type: 'multiple_choice',
                 text: qText,
                 options: options,
@@ -943,19 +1001,11 @@ function startTest() {
         }, 1000);
     }
 
-    // Explicitly sync toggles and question count limit from DOM at start
+    // Explicitly sync toggles and question range from DOM at start
     state.isRandomized = DOM.home.randomizeToggle ? DOM.home.randomizeToggle.checked : false;
     state.isRandomizedOptions = DOM.home.randomizeOptionsToggle ? DOM.home.randomizeOptionsToggle.checked : false;
     if (DOM.home.qcountSetting) {
-        const qCountVal = DOM.home.qcountSetting.value.trim();
-        if (qCountVal && qCountVal.toLowerCase() !== 'all') {
-            const parsedLimit = parseInt(qCountVal);
-            if (!isNaN(parsedLimit) && parsedLimit > 0) {
-                state.questionCountLimit = parsedLimit;
-            }
-        } else {
-            state.questionCountLimit = null;
-        }
+        state.questionRange = parseQuestionRangeInput(DOM.home.qcountSetting.value, state.customQuestions.length);
     }
 
     // Deep copy to prevent modifying the original options array if options are shuffled
@@ -974,12 +1024,17 @@ function startTest() {
         }
     });
 
-    // 1. Quy tắc thứ tự: Luôn lấy từ trên xuống dưới (vd 10 câu là lấy từ 1 đến 10, 20 là từ 1 đến 20)
-    if (state.questionCountLimit !== null && state.questionCountLimit < activeQuestions.length) {
-        activeQuestions = activeQuestions.slice(0, state.questionCountLimit);
+    // 1. Quy tắc thứ tự: Lấy theo khoảng hoặc số lượng câu hỏi đã tuỳ chỉnh (từ trên xuống dưới)
+    // Ví dụ: 11-20 -> lấy từ câu 11 đến 20; 20 -> lấy từ câu 1 đến 20; All -> lấy toàn bộ
+    if (state.questionRange !== null) {
+        const startIdx = Math.max(0, state.questionRange.start - 1);
+        const endIdx = Math.min(activeQuestions.length, state.questionRange.end);
+        if (startIdx < endIdx) {
+            activeQuestions = activeQuestions.slice(startIdx, endIdx);
+        }
     }
 
-    // 2. Nếu BẬT "Randomize Questions", chỉ xáo trộn thứ tự TRONG PHẠM VI các câu hỏi đã chọn (1 đến N)
+    // 2. Nếu BẬT "Randomize Questions", chỉ xáo trộn thứ tự TRONG PHẠM VI các câu hỏi đã chọn (ví dụ 11 đến 20)
     if (state.isRandomized) {
         activeQuestions = shuffleArray(activeQuestions);
     }
@@ -1041,13 +1096,16 @@ function renderQuestions() {
         // Question Header
         const qTextWithImages = replaceLinksToImages(q.text);
         const isFlagged = state.flags.has(index);
+        const origNumBadge = (q.originalNumber && q.originalNumber !== (index + 1)) 
+            ? `<span class="inline-block text-xs font-semibold px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/50 mr-1.5 align-middle">Câu gốc: ${q.originalNumber}</span> ` 
+            : '';
         let html = `
             <div class="flex gap-4 mb-6 relative">
                 <div class="w-10 h-10 shrink-0 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center font-bold mt-1">
                     ${index + 1}
                 </div>
                 <h3 class="text-lg font-medium text-slate-800 dark:text-slate-100 leading-relaxed pt-1 flex-grow pr-10">
-                    ${qTextWithImages}
+                    ${origNumBadge}${qTextWithImages}
                 </h3>
                 <button onclick="toggleFlag(${index})" id="flag-btn-${index}" class="absolute top-0 right-0 w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isFlagged ? 'text-amber-500 bg-amber-50 dark:bg-amber-900/30' : 'text-slate-400 hover:text-amber-500 hover:bg-slate-100 dark:hover:bg-slate-700'}">
                     <i class="ph ${isFlagged ? 'ph-fill' : ''} ph-flag text-xl transition-transform ${isFlagged ? 'scale-110' : ''}"></i>
