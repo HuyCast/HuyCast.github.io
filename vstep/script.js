@@ -188,9 +188,127 @@ function init() {
 
     renderHistory();
     validateImportArea(); // Initial validation check
+
+    // Setup Theme & Tabs
+    const themeToggleBtn = document.getElementById('theme-toggle-btn');
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', toggleTheme);
+    }
+    initTheme();
+
+    const tabConfigBtn = document.getElementById('tab-config-btn');
+    const tabImportBtn = document.getElementById('tab-import-btn');
+    const tabHistoryBtn = document.getElementById('tab-history-btn');
+    if (tabConfigBtn) tabConfigBtn.addEventListener('click', () => switchTab('config'));
+    if (tabImportBtn) tabImportBtn.addEventListener('click', () => switchTab('import'));
+    if (tabHistoryBtn) tabHistoryBtn.addEventListener('click', () => switchTab('history'));
 }
 
 
+
+// ===== THEME & INTERFACE CONTROLS =====
+function initTheme() {
+    const saved = localStorage.getItem('vstep_theme');
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const isDark = saved === 'dark' || (!saved && prefersDark);
+    applyTheme(isDark);
+}
+
+function applyTheme(isDark) {
+    if (isDark) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('vstep_theme', 'dark');
+    } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('vstep_theme', 'light');
+    }
+}
+
+function toggleTheme() {
+    const isDark = document.documentElement.classList.contains('dark');
+    applyTheme(!isDark);
+}
+
+window.switchTab = function(tabName) {
+    const panels = {
+        config: document.getElementById('panel-config'),
+        import: document.getElementById('panel-import'),
+        history: document.getElementById('panel-history')
+    };
+    const btns = {
+        config: document.getElementById('tab-config-btn'),
+        import: document.getElementById('tab-import-btn'),
+        history: document.getElementById('tab-history-btn')
+    };
+
+    Object.keys(panels).forEach(key => {
+        if (!panels[key]) return;
+        if (key === tabName) {
+            panels[key].classList.remove('hidden');
+        } else {
+            panels[key].classList.add('hidden');
+        }
+    });
+
+    const activeBtnClass = 'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-sm bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 border border-slate-200 dark:border-slate-700';
+    const inactiveBtnClass = 'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200';
+
+    Object.keys(btns).forEach(key => {
+        if (!btns[key]) return;
+        btns[key].className = key === tabName ? activeBtnClass : inactiveBtnClass;
+    });
+};
+
+window.setTimerPreset = function(mins) {
+    state.timerSettingMinutes = mins;
+    if (DOM.home.timerSetting) {
+        DOM.home.timerSetting.value = mins;
+    }
+    document.querySelectorAll('.timer-preset-btn').forEach(btn => {
+        const btnMins = parseInt(btn.dataset.mins || btn.innerText, 10);
+        if (btnMins === mins) {
+            btn.className = 'timer-preset-btn px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all bg-blue-600 text-white border-blue-600 shadow-sm';
+        } else {
+            btn.className = 'timer-preset-btn px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:border-blue-400 transition-all';
+        }
+    });
+};
+
+window.filterReview = function(type) {
+    const container = DOM.result.reviewContainer;
+    if (!container) return;
+    const items = container.querySelectorAll('.review-item');
+
+    const btnAll = document.getElementById('filter-all-btn');
+    const btnIncorrect = document.getElementById('filter-incorrect-btn');
+    const btnCorrect = document.getElementById('filter-correct-btn');
+
+    const activeClass = 'px-3.5 py-1.5 rounded-lg font-semibold text-xs sm:text-sm transition-all bg-blue-600 text-white shadow-sm';
+    const inactiveClass = 'px-3.5 py-1.5 rounded-lg font-medium text-xs sm:text-sm transition-all bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white';
+
+    if (btnAll) btnAll.className = type === 'all' ? activeClass : inactiveClass;
+    if (btnIncorrect) btnIncorrect.className = type === 'incorrect' ? activeClass : inactiveClass;
+    if (btnCorrect) btnCorrect.className = type === 'correct' ? activeClass : inactiveClass;
+
+    items.forEach(item => {
+        const status = item.dataset.status;
+        if (type === 'all') {
+            item.classList.remove('hidden');
+        } else if (type === 'incorrect') {
+            if (status === 'incorrect' || status === 'partial') {
+                item.classList.remove('hidden');
+            } else {
+                item.classList.add('hidden');
+            }
+        } else if (type === 'correct') {
+            if (status === 'correct') {
+                item.classList.remove('hidden');
+            } else {
+                item.classList.add('hidden');
+            }
+        }
+    });
+};
 
 // ===== CORE LOGIC =====
 
@@ -869,6 +987,18 @@ Strawberry :: Quả dâu tây`;
     showToast("Sample questions loaded!");
 }
 
+function updateExamReadyBadge(isValid, count) {
+    const readyBadge = document.getElementById('exam-ready-badge');
+    if (!readyBadge) return;
+    if (isValid && count > 0) {
+        readyBadge.className = 'px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400';
+        readyBadge.innerText = `${count} câu hỏi sẵn sàng`;
+    } else {
+        readyBadge.className = 'px-2.5 py-1 text-xs font-semibold rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700';
+        readyBadge.innerText = 'Chưa có đề';
+    }
+}
+
 function validateImportArea(skipStatusUpdate = false) {
     const rawText = DOM.home.importText.value.trim();
     if (!rawText) {
@@ -881,6 +1011,7 @@ function validateImportArea(skipStatusUpdate = false) {
         }
         state.customQuestions = null;
         updateQuestionCountUI();
+        updateExamReadyBadge(false, 0);
         return;
     }
 
@@ -930,6 +1061,7 @@ function validateImportArea(skipStatusUpdate = false) {
             DOM.home.importStatus.innerText = `${questionCount} valid question(s). Ready to start!`;
             DOM.home.importStatus.className = "text-xs font-medium text-green-600 dark:text-green-400";
         }
+        updateExamReadyBadge(true, questionCount);
         // Immediately parse questions and update Question Count selector UI
         parseQuestions(rawText, true);
     } else {
@@ -938,6 +1070,7 @@ function validateImportArea(skipStatusUpdate = false) {
         DOM.home.startBtn.classList.remove('hover:bg-blue-700', 'dark:hover:bg-blue-600', 'group');
         state.customQuestions = null;
         updateQuestionCountUI();
+        updateExamReadyBadge(false, 0);
         if (!skipStatusUpdate) {
             if (questionCount === 0) {
                  DOM.home.importStatus.innerText = "No questions found. Check format.";
@@ -1075,6 +1208,10 @@ function startTest() {
     updateTimerDisplay();
     updateReviewPanel();
 
+    // Set quiz title in header
+    const headerTitle = document.getElementById('header-quiz-title');
+    if (headerTitle) headerTitle.innerText = state.currentQuizTitle || 'Bài thi trắc nghiệm';
+
     // Start Timer
     state.timerInterval = setInterval(timerTick, 1000);
 
@@ -1148,9 +1285,12 @@ function renderQuestions() {
                 const optTextWithImages = replaceLinksToImages(opt.text);
                 const inputId = `q${index}-opt-${opt.id}`;
                 html += `
-                    <label for="${inputId}" class="option-label flex items-center p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 w-full group">
-                        <input type="radio" id="${inputId}" name="q${index}" value="${opt.id}" class="custom-radio mr-4" onchange="handleAnswer(${index}, '${opt.id}')">
-                            <span class="text-slate-700 dark:text-slate-200 font-medium group-hover:text-slate-900 dark:group-hover:text-white w-full break-words">${optTextWithImages}</span>
+                    <label for="${inputId}" class="option-label flex items-center p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/60 dark:bg-slate-800/60 w-full group cursor-pointer transition-all hover:border-blue-400 dark:hover:border-blue-600 hover:bg-blue-50/20 dark:hover:bg-blue-900/10">
+                        <input type="radio" id="${inputId}" name="q${index}" value="${opt.id}" class="custom-radio mr-3 shrink-0" onchange="handleAnswer(${index}, '${opt.id}')">
+                        <span class="option-keycap w-7 h-7 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs flex items-center justify-center mr-3 shrink-0 uppercase transition-all group-hover:border-blue-500 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                            ${opt.id}
+                        </span>
+                        <span class="text-slate-700 dark:text-slate-200 font-medium group-hover:text-slate-900 dark:group-hover:text-white w-full break-words text-sm sm:text-base leading-relaxed">${optTextWithImages}</span>
                     </label>
                     `;
             });
@@ -1724,12 +1864,13 @@ function evaluateResults() {
             isCorrect = points === 1;
             correct += points;
             
+            const itemStatus = isCorrect ? 'correct' : (points > 0 ? 'partial' : 'incorrect');
             const statusColor = isCorrect ? 'text-green-500 dark:text-green-400' : (points > 0 ? 'text-amber-500 dark:text-amber-400' : 'text-red-500 dark:text-red-400');
             const icon = isCorrect ? 'ph-check-circle' : (points > 0 ? 'ph-warning-circle' : 'ph-x-circle');
             const border = isCorrect ? 'border-green-100 dark:border-green-900/50 bg-green-50/30 dark:bg-green-900/10' : (points > 0 ? 'border-amber-100 dark:border-amber-900/50 bg-amber-50/30 dark:bg-amber-900/10' : 'border-red-100 dark:border-red-900/50 bg-red-50/30 dark:bg-red-900/10');
             
             qReviewHtml = `
-                <div class="p-4 md:p-5 rounded-xl border ${border} mb-4 shadow-sm transition-all hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
+                <div class="review-item p-4 md:p-5 rounded-xl border ${border} mb-4 shadow-sm transition-all hover:bg-slate-50/50 dark:hover:bg-slate-800/50" data-status="${itemStatus}">
                     <div class="flex gap-4">
                         <div class="mt-1 ${statusColor}">
                             <i class="ph fill ${icon} text-2xl"></i>
@@ -1749,6 +1890,7 @@ function evaluateResults() {
             isCorrect = userAnswer === q.correct;
             if (isCorrect) correct++;
 
+            const itemStatus = isCorrect ? 'correct' : 'incorrect';
             const userOpt = userAnswer ? q.options.find(o => o.id === userAnswer).text : "No answer";
             const correctOpt = q.options.find(o => o.id === q.correct).text;
 
@@ -1777,7 +1919,7 @@ function evaluateResults() {
             }
 
             qReviewHtml = `
-                <div class="p-4 md:p-5 rounded-xl border ${border} mb-4 shadow-sm transition-all hover:bg-slate-50/50 dark:hover:bg-slate-800/50">
+                <div class="review-item p-4 md:p-5 rounded-xl border ${border} mb-4 shadow-sm transition-all hover:bg-slate-50/50 dark:hover:bg-slate-800/50" data-status="${itemStatus}">
                     <div class="flex gap-4">
                         <div class="mt-1 ${statusColor}">
                             <i class="ph fill ${icon} text-2xl"></i>

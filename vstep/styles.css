@@ -1,17 +1,117 @@
-/* Custom Variables & Setup */
+/* ==========================================================================
+   V-QUIZ PRO DESIGN SYSTEM & SAAS STYLESHEET
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 :root {
-  --glass-bg: rgba(255, 255, 255, 0.65);
-  --glass-border: rgba(255, 255, 255, 0.6);
-  --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+  --font-display: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Color Palette - Light Mode */
+  --bg-primary: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-surface-elevated: #ffffff;
+  --bg-subtle: #f1f5f9;
+  
+  --border-subtle: rgba(226, 232, 240, 0.8);
+  --border-strong: #cbd5e1;
+  --border-glow: rgba(99, 102, 241, 0.25);
+
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --text-dim: #94a3b8;
+
+  --accent-primary: #4f46e5;
+  --accent-primary-hover: #4338ca;
+  --accent-glow: rgba(79, 70, 229, 0.2);
+
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.8);
+  --glass-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.08);
+
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
 }
 
+html.dark {
+  /* Color Palette - Dark Mode */
+  --bg-primary: #090d16;
+  --bg-surface: #0f172a;
+  --bg-surface-elevated: #1e293b;
+  --bg-subtle: #131b2e;
+  
+  --border-subtle: rgba(51, 65, 85, 0.6);
+  --border-strong: #334155;
+  --border-glow: rgba(129, 140, 248, 0.2);
+
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+
+  --accent-primary: #6366f1;
+  --accent-primary-hover: #4f46e5;
+  --accent-glow: rgba(99, 102, 241, 0.25);
+
+  --glass-bg: rgba(15, 23, 42, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* Base Body Styles */
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
+  background-color: var(--bg-primary);
+  color: var(--text-main);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
 }
 
-/* Glassmorphism Utilities */
+h1, h2, h3, h4, h5, .font-display {
+  font-family: var(--font-display);
+}
+
+code, pre, .font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Ambient Background Grid & Radial Glow */
+.bg-grid-pattern {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(148, 163, 184, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
+}
+
+html.dark .bg-grid-pattern {
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+/* Glassmorphism & SaaS Card Utilities */
+.saas-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--glass-shadow);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.saas-card-solid {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+}
+
+html.dark .saas-card-solid {
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+}
+
 .glass-card {
   background: var(--glass-bg);
   backdrop-filter: blur(16px);
@@ -21,17 +121,11 @@ body {
 }
 
 .shadow-smooth {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02), 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.08), 0 4px 6px -2px rgba(15, 23, 42, 0.02);
 }
 
-/* Animations */
-.floating {
-  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
-}
-
-.floating:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+html.dark .shadow-smooth {
+  box-shadow: 0 12px 36px -10px rgba(0, 0, 0, 0.4);
 }
 
 /* Custom Scrollbar */
@@ -48,61 +142,129 @@ body {
 
 .custom-scrollbar::-webkit-scrollbar-thumb,
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.4);
-  border-radius: 10px;
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 9999px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover,
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.7);
+  background: rgba(148, 163, 184, 0.6);
 }
 
-/* Radio Button Customization */
+/* Modern Pill Tabs */
+.nav-tab-btn {
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.nav-tab-btn.active {
+  color: var(--accent-primary);
+  background-color: var(--bg-surface);
+  box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.08);
+}
+
+html.dark .nav-tab-btn.active {
+  background-color: var(--bg-surface-elevated);
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.3);
+}
+
+/* Interactive Option Labels (Exam Question Choices) */
 .option-label {
   cursor: pointer;
-  transition: all 0.2s ease;
-  transform-origin: center;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  background-color: var(--bg-surface);
+  border: 1.5px solid var(--border-subtle);
 }
 
 .option-label:hover {
-  background-color: rgba(248, 250, 252, 0.8);
-  border-color: #cbd5e1;
+  border-color: var(--accent-primary);
+  background-color: rgba(99, 102, 241, 0.04);
+  transform: translateY(-1px);
+}
+
+html.dark .option-label {
+  background-color: rgba(30, 41, 59, 0.5);
+}
+
+html.dark .option-label:hover {
+  background-color: rgba(99, 102, 241, 0.1);
+  border-color: #818cf8;
 }
 
 .option-selected {
-  background-color: #eff6ff !important;
-  border-color: #93c5fd !important;
-  box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.05) !important;
+  background-color: rgba(99, 102, 241, 0.08) !important;
+  border-color: var(--accent-primary) !important;
+  box-shadow: 0 0 0 1px var(--accent-primary), 0 4px 12px -2px var(--accent-glow) !important;
 }
 
+.option-selected .option-keycap {
+  background-color: var(--accent-primary) !important;
+  border-color: var(--accent-primary) !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.35);
+}
+
+html.dark .option-selected {
+  background-color: rgba(99, 102, 241, 0.18) !important;
+  border-color: #818cf8 !important;
+  box-shadow: 0 0 0 1px #818cf8, 0 4px 16px -2px rgba(99, 102, 241, 0.3) !important;
+}
+
+/* Keycap Badge for Options */
+.keycap-badge {
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.option-selected .keycap-badge {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: #ffffff;
+  box-shadow: 0 2px 6px var(--accent-glow);
+}
+
+/* Custom Radio Circle */
 .custom-radio {
   appearance: none;
-  width: 22px;
-  height: 22px;
-  border: 2px solid #cbd5e1;
+  width: 1.25rem;
+  height: 1.25rem;
+  border: 2px solid var(--border-strong);
   border-radius: 50%;
   outline: none;
-  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.2s ease;
   position: relative;
   cursor: pointer;
   flex-shrink: 0;
-  background-color: white;
+  background-color: transparent;
 }
 
 .custom-radio:checked {
-  border-color: #3b82f6;
-  border-width: 6px;
+  border-color: var(--accent-primary);
+  border-width: 5px;
 }
 
 .custom-radio:focus-visible {
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+  box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
 /* Question Card Animation */
 .question-card {
-  animation: slideUpFade 0.5s ease forwards;
+  animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   opacity: 0;
-  transform: translateY(10px);
+  transform: translateY(12px);
 }
 
 @keyframes slideUpFade {
@@ -112,29 +274,40 @@ body {
   }
 }
 
-/* Active State for count buttons */
-.count-btn.active {
-  background-color: #3b82f6;
-  color: white;
-  border-color: #3b82f6;
-  box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39);
-  transform: scale(1.02);
+/* Primary Button Glow & Ripple Effect */
+.btn-glow {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Primary Button Active State */
-.btn-primary-active {
-  background-color: #2563eb !important;
-  color: white !important;
-  cursor: pointer !important;
-  box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3) !important;
+.btn-glow::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
 }
 
-.btn-primary-active:hover {
-  background-color: #1d4ed8 !important;
+.btn-glow:hover::after {
+  opacity: 1;
+}
+
+.btn-glow:hover {
   transform: translateY(-2px);
+  box-shadow: 0 12px 24px -6px var(--accent-glow);
 }
 
-/* Hide Number Input Spinners */
+.btn-glow:active {
+  transform: translateY(0);
+}
+
+/* Number input spinners reset */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
@@ -150,36 +323,66 @@ input[type="number"] {
 /* Image Rendering inside Quiz */
 .question-img {
   max-width: 100%;
-  height: auto;
-  border-radius: 8px;
-  margin-top: 8px;
-  display: block;
+  max-height: 380px;
+  object-fit: contain;
+  border-radius: 0.75rem;
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-surface);
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.05);
 }
 
-/* Dark Mode Overrides */
-html.dark {
-  --glass-bg: rgba(30, 41, 59, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+/* Matching question connector styling */
+.matching-left-btn,
+.matching-right-btn {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-html.dark body {
-  background-color: #0f172a;
+.matching-left-btn:hover,
+.matching-right-btn:hover {
+  transform: translateY(-1px);
 }
 
-/* Radio Button Dark Mode Customization */
-html.dark .option-label:hover {
-  background-color: rgba(51, 65, 85, 0.8);
-  border-color: #475569;
+/* Stepper button styling */
+.stepper-btn {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.125rem;
+  transition: all 0.15s ease;
 }
 
-html.dark .option-selected {
-  background-color: rgba(30, 58, 138, 0.4) !important;
-  border-color: #3b82f6 !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3) !important;
+.stepper-btn:hover {
+  background-color: var(--bg-subtle);
+  transform: scale(1.05);
 }
 
-html.dark .custom-radio {
-  background-color: #1e293b;
-  border-color: #475569;
+.stepper-btn:active {
+  transform: scale(0.95);
+}
+
+/* Result Circular Score Animation */
+#score-circle {
+  transition: stroke-dashoffset 1.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Review Answer Filter Tabs */
+.review-filter-btn {
+  padding: 0.375rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.review-filter-btn.active {
+  background-color: var(--accent-primary);
+  color: #ffffff;
+  box-shadow: 0 2px 8px var(--accent-glow);
 }
