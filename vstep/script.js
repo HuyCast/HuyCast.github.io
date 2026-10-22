@@ -22,7 +22,8 @@ const state = {
     personalBests: {}, // { [quizTitle: string]: { score: number, time: number } }
     currentQuizTitle: 'Unnamed Quiz',
     history: [], // [{ score: number, time: number, date: number, quizTitle: string }]
-    quizLibrary: [] // [{ id: string, title: string, content: string, date: number }]
+    quizLibrary: [], // [{ id: string, title: string, content: string, date: number }]
+    learningModeLocked: {} // { [questionIndex: number]: boolean }
 };
 
 // ===== DOM ELEMENTS =====
@@ -588,10 +589,11 @@ function closeQuizEditor() {
 function renderQuizEditor() {
     let html = '';
     state.customQuestions.forEach((q, index) => {
+        const typeLabel = q.type === 'matching' ? 'Matching' : (q.type === 'multiple_select' ? 'Chọn nhiều đáp án' : 'Trắc nghiệm 1 đáp án');
         html += `
             <div class="p-4 bg-slate-50 dark:bg-slate-800/80 rounded-xl border border-slate-200 dark:border-slate-700" data-index="${index}">
                 <div class="mb-3">
-                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Question ${index + 1} (${q.type === 'matching' ? 'Matching' : 'Multiple Choice'})</label>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Question ${index + 1} (${typeLabel})</label>
                     <textarea class="edit-q-text w-full rounded border border-slate-300 dark:border-slate-600 p-2 text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-1 focus:ring-blue-500" rows="2">${q.text}</textarea>
                 </div>
         `;
@@ -608,6 +610,20 @@ function renderQuizEditor() {
                 `;
             });
             html += `</div>`;
+        } else if (q.type === 'multiple_select') {
+            html += `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
+                    ${q.options.map((opt, oIndex) => `
+                        <div class="flex items-center gap-2">
+                            <input type="checkbox" name="edit-correct-${index}" value="${opt.id}" class="edit-q-correct-multi cursor-pointer w-4 h-4 text-purple-600 focus:ring-purple-500 rounded border-slate-300 dark:border-slate-600 dark:bg-slate-900" ${Array.isArray(q.correct) && q.correct.includes(opt.id) ? 'checked' : ''}>
+                            <div class="flex-grow flex items-center">
+                                <span class="text-sm font-semibold text-slate-600 dark:text-slate-400 w-6">${opt.id.toUpperCase()}.</span>
+                                <input type="text" class="edit-q-opt flex-grow rounded border border-slate-300 dark:border-slate-600 p-1.5 text-sm bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:ring-1 focus:ring-blue-500" data-opt-id="${opt.id}" value="${opt.text}">
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
         } else {
             html += `
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
@@ -641,16 +657,28 @@ function handleQuestionEdit(e) {
         q.text = e.target.value;
     }
 
-    // Update Option Text (MCQ)
+    // Update Option Text (MCQ / Multi-select)
     if (e.target.classList.contains('edit-q-opt')) {
         const optId = e.target.dataset.optId;
         const opt = q.options.find(o => o.id === optId);
         if (opt) opt.text = e.target.value;
     }
 
-    // Update Correct Answer (MCQ)
+    // Update Correct Answer (Single MCQ)
     if (e.target.classList.contains('edit-q-correct')) {
         q.correct = e.target.value;
+    }
+
+    // Update Correct Answers (Multiple Select)
+    if (e.target.classList.contains('edit-q-correct-multi')) {
+        if (!Array.isArray(q.correct)) q.correct = q.correct ? [q.correct] : [];
+        const val = e.target.value;
+        if (e.target.checked) {
+            if (!q.correct.includes(val)) q.correct.push(val);
+        } else {
+            q.correct = q.correct.filter(id => id !== val);
+        }
+        q.type = q.correct.length > 1 ? 'multiple_select' : 'multiple_choice';
     }
     
     // Update Matching Pairs
@@ -678,8 +706,9 @@ function reconstructTextarea() {
             rawText += pairStrings.join('\n') + '\n\n';
         } else {
             const optionStrings = q.options.map(opt => {
-                const isCorrect = q.correct === opt.id ? '/' : '';
-                return `${isCorrect}${opt.id.toUpperCase()}. ${opt.text}`;
+                const isCorrect = Array.isArray(q.correct) ? q.correct.includes(opt.id) : q.correct === opt.id;
+                const prefix = isCorrect ? '/' : '';
+                return `${prefix}${opt.id.toUpperCase()}. ${opt.text}`;
             });
             rawText += optionStrings.join('\n') + '\n\n';
         }
@@ -911,7 +940,7 @@ function parseQuestions(text, silent = false) {
         const optMatches = [...optionsHtml.matchAll(/(?<=^|\s)(\/?)([A-Z])\.\s+(.*?)(?=\s+\/?(?:[A-Z])\.\s+|$)/gis)];
 
         if (optMatches.length > 0) {
-            let correctId = null;
+            let correctIds = [];
             let options = [];
 
             // Re-map to a,b,c,d standard
@@ -921,19 +950,24 @@ function parseQuestions(text, silent = false) {
                 const optText = m[3].trim();
 
                 options.push({ id: optLetter, text: optText });
-                if (isCorrect) correctId = optLetter;
+                if (isCorrect) correctIds.push(optLetter);
             });
 
             // Default to first option if no '/' was provided
-            if (!correctId && options.length > 0) correctId = options[0].id;
+            if (correctIds.length === 0 && options.length > 0) {
+                correctIds = [options[0].id];
+            }
+
+            const isMultiExplicit = /(?:chọn\s+nhiều|nhiều\s+đáp\s+án|multiple\s+(?:choice|answers?|options?|select))/i.test(qText);
+            const isMulti = correctIds.length > 1 || isMultiExplicit;
 
             parsedQuestions.push({
                 id: i,
                 originalNumber: origNum,
-                type: 'multiple_choice',
+                type: isMulti ? 'multiple_select' : 'multiple_choice',
                 text: qText,
                 options: options,
-                correct: correctId
+                correct: isMulti ? correctIds : correctIds[0]
             });
         }
     }
@@ -980,7 +1014,13 @@ Câu 4: Nối các từ tiếng Anh với nghĩa tiếng Việt tương ứng:
 Apple :: Quả táo
 Banana :: Quả chuối
 Watermelon :: Dưa hấu
-Strawberry :: Quả dâu tây`;
+Strawberry :: Quả dâu tây
+
+Câu 5: (Chọn nhiều đáp án) Những phương thức nào sau đây thuộc giao thức HTTP tiêu chuẩn?
+/A. GET
+/B. POST
+C. PUSH
+/D. DELETE`;
     
     DOM.home.importText.value = sampleData;
     validateImportArea();
@@ -1152,7 +1192,8 @@ function startTest() {
         } else {
             return {
                 ...q,
-                options: q.options.map(opt => ({ ...opt }))
+                options: q.options.map(opt => ({ ...opt })),
+                correct: Array.isArray(q.correct) ? [...q.correct] : q.correct
             };
         }
     });
@@ -1195,6 +1236,7 @@ function startTest() {
 
     state.answers = {};
     state.matchingActiveLeft = {};
+    state.learningModeLocked = {};
     state.flags.clear();
     state.timeRemaining = state.timerSettingMinutes * 60; // Use configured minutes
     state.startTime = new Date();
@@ -1236,13 +1278,16 @@ function renderQuestions() {
         const origNumBadge = (q.originalNumber && q.originalNumber !== (index + 1)) 
             ? `<span class="inline-block text-xs font-semibold px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/50 mr-1.5 align-middle">Câu gốc: ${q.originalNumber}</span> ` 
             : '';
+        const multiBadge = q.type === 'multiple_select'
+            ? `<span class="inline-block text-xs font-semibold px-2 py-0.5 rounded bg-purple-50 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/50 mr-1.5 align-middle"><i class="ph-bold ph-check-square"></i> Chọn nhiều đáp án</span> `
+            : '';
         let html = `
             <div class="flex gap-4 mb-6 relative">
                 <div class="w-10 h-10 shrink-0 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center font-bold mt-1">
                     ${index + 1}
                 </div>
                 <h3 class="text-lg font-medium text-slate-800 dark:text-slate-100 leading-relaxed pt-1 flex-grow pr-10">
-                    ${origNumBadge}${qTextWithImages}
+                    ${origNumBadge}${multiBadge}${qTextWithImages}
                 </h3>
                 <button onclick="toggleFlag(${index})" id="flag-btn-${index}" class="absolute top-0 right-0 w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isFlagged ? 'text-amber-500 bg-amber-50 dark:bg-amber-900/30' : 'text-slate-400 hover:text-amber-500 hover:bg-slate-100 dark:hover:bg-slate-700'}">
                     <i class="ph ${isFlagged ? 'ph-fill' : ''} ph-flag text-xl transition-transform ${isFlagged ? 'scale-110' : ''}"></i>
@@ -1279,6 +1324,36 @@ function renderQuestions() {
             
             html += `</div>`;
             html += `<p class="mt-4 mb-2 text-xs text-slate-500 italic text-center col-span-2 hidden sm:block"><i class="ph ph-hand-pointing"></i> Click an item on the left, then click an item on the right to pair.</p>`;
+        } else if (q.type === 'multiple_select') {
+            html += `<div class="space-y-3 pl-0 md:pl-14">`;
+            html += `<div class="text-xs font-semibold text-purple-600 dark:text-purple-400 mb-1 flex items-center gap-1.5"><i class="ph-bold ph-check-square"></i> Chọn tất cả các đáp án đúng:</div>`;
+            q.options.forEach(opt => {
+                const optTextWithImages = replaceLinksToImages(opt.text);
+                const inputId = `q${index}-opt-${opt.id}`;
+                html += `
+                    <label for="${inputId}" class="option-label option-label-multi flex items-center p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white/60 dark:bg-slate-800/60 w-full group cursor-pointer transition-all hover:border-purple-400 dark:hover:border-purple-600 hover:bg-purple-50/20 dark:hover:bg-purple-900/10">
+                        <input type="checkbox" id="${inputId}" name="q${index}" value="${opt.id}" class="custom-checkbox sr-only" onchange="handleMultiSelectAnswer(${index}, '${opt.id}')">
+                        <span class="option-keycap w-7 h-7 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs flex items-center justify-center mr-3 shrink-0 uppercase transition-all group-hover:border-purple-500 group-hover:text-purple-600 dark:group-hover:text-purple-400">
+                            ${opt.id}
+                        </span>
+                        <span class="text-slate-700 dark:text-slate-200 font-medium group-hover:text-slate-900 dark:group-hover:text-white w-full break-words text-sm sm:text-base leading-relaxed">${optTextWithImages}</span>
+                        <div class="multi-check-icon w-6 h-6 rounded-md border border-slate-300 dark:border-slate-600 flex items-center justify-center ml-2 shrink-0 text-white transition-all">
+                            <i class="ph-bold ph-check opacity-0 text-sm"></i>
+                        </div>
+                    </label>
+                `;
+            });
+            if (state.isLearningMode) {
+                html += `
+                    <div class="mt-4 flex flex-wrap items-center gap-3">
+                        <button type="button" id="confirm-multi-btn-${index}" onclick="confirmLearningMultiSelect(${index})" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-sm font-semibold transition-all shadow-sm flex items-center gap-1.5">
+                            <i class="ph-bold ph-check-circle"></i> Kiểm tra đáp án
+                        </button>
+                        <span id="multi-feedback-${index}" class="text-xs font-medium"></span>
+                    </div>
+                `;
+            }
+            html += `</div>`;
         } else {
             html += `<div class="space-y-3 pl-0 md:pl-14">`;
             q.options.forEach(opt => {
@@ -1361,6 +1436,124 @@ window.handleAnswer = function(questionIndex, optionId) {
 
     updateProgressIndicator();
     updateReviewPanel();
+};
+
+window.handleMultiSelectAnswer = function(questionIndex, optionId) {
+    if (state.isLearningMode && state.learningModeLocked && state.learningModeLocked[questionIndex]) {
+        return; // Locked after checking
+    }
+
+    if (!Array.isArray(state.answers[questionIndex])) {
+        state.answers[questionIndex] = [];
+    }
+
+    const currentAnswers = state.answers[questionIndex];
+    const idx = currentAnswers.indexOf(optionId);
+    if (idx === -1) {
+        currentAnswers.push(optionId);
+    } else {
+        currentAnswers.splice(idx, 1);
+    }
+    currentAnswers.sort();
+
+    if (currentAnswers.length === 0) {
+        delete state.answers[questionIndex];
+    }
+
+    const card = document.getElementById(`q-card-${questionIndex}`);
+    if (card) {
+        const labels = card.querySelectorAll('.option-label-multi');
+        labels.forEach(label => {
+            const input = label.querySelector('input');
+            const checkIcon = label.querySelector('.multi-check-icon');
+            const checkSvg = checkIcon ? checkIcon.querySelector('i') : null;
+
+            if (input && input.checked) {
+                label.classList.add('option-selected-multi');
+                if (checkIcon) {
+                    checkIcon.classList.add('bg-purple-600', 'border-purple-600');
+                    checkIcon.classList.remove('border-slate-300', 'dark:border-slate-600');
+                }
+                if (checkSvg) checkSvg.classList.remove('opacity-0');
+            } else {
+                label.classList.remove('option-selected-multi');
+                if (checkIcon) {
+                    checkIcon.classList.remove('bg-purple-600', 'border-purple-600');
+                    checkIcon.classList.add('border-slate-300', 'dark:border-slate-600');
+                }
+                if (checkSvg) checkSvg.classList.add('opacity-0');
+            }
+        });
+    }
+
+    updateProgressIndicator();
+    updateReviewPanel();
+};
+
+window.confirmLearningMultiSelect = function(questionIndex) {
+    if (!state.learningModeLocked) state.learningModeLocked = {};
+    if (state.learningModeLocked[questionIndex]) return;
+
+    const q = state.questions[questionIndex];
+    const userAnswers = state.answers[questionIndex] || [];
+    if (userAnswers.length === 0) {
+        alert("Vui lòng chọn ít nhất một đáp án trước khi kiểm tra!");
+        return;
+    }
+
+    state.learningModeLocked[questionIndex] = true;
+
+    const card = document.getElementById(`q-card-${questionIndex}`);
+    if (!card) return;
+
+    const btn = document.getElementById(`confirm-multi-btn-${questionIndex}`);
+    if (btn) {
+        btn.disabled = true;
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+
+    const correctSet = new Set(Array.isArray(q.correct) ? q.correct : [q.correct]);
+    const labels = card.querySelectorAll('.option-label-multi');
+
+    labels.forEach(label => {
+        const input = label.querySelector('input');
+        input.disabled = true;
+        label.classList.add('cursor-not-allowed');
+
+        const optId = input.value;
+        const isChosen = userAnswers.includes(optId);
+        const isActuallyCorrect = correctSet.has(optId);
+
+        if (isActuallyCorrect) {
+            label.classList.remove('border-slate-200', 'dark:border-slate-700', 'bg-white/60', 'dark:bg-slate-800/60');
+            label.classList.add('border-green-500', 'bg-green-50', 'dark:bg-green-900/30');
+            if (!label.querySelector('.ph-check-circle')) {
+                const icon = document.createElement('i');
+                icon.className = 'ph-fill ph-check-circle text-green-500 text-xl ml-auto';
+                label.appendChild(icon);
+            }
+        } else if (isChosen && !isActuallyCorrect) {
+            label.classList.remove('border-slate-200', 'dark:border-slate-700', 'bg-white/60', 'dark:bg-slate-800/60');
+            label.classList.add('border-red-500', 'bg-red-50', 'dark:bg-red-900/30');
+            if (!label.querySelector('.ph-x-circle')) {
+                const icon = document.createElement('i');
+                icon.className = 'ph-fill ph-x-circle text-red-500 text-xl ml-auto';
+                label.appendChild(icon);
+            }
+        }
+    });
+
+    const feedbackEl = document.getElementById(`multi-feedback-${questionIndex}`);
+    if (feedbackEl) {
+        const isAllCorrect = correctSet.size === userAnswers.length && userAnswers.every(ans => correctSet.has(ans));
+        if (isAllCorrect) {
+            feedbackEl.className = 'text-xs font-bold text-green-600 dark:text-green-400 flex items-center gap-1';
+            feedbackEl.innerHTML = '<i class="ph-fill ph-check-circle"></i> Chính xác hoàn toàn!';
+        } else {
+            feedbackEl.className = 'text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1';
+            feedbackEl.innerHTML = `<i class="ph-fill ph-warning-circle"></i> Đáp án đúng là: ${[...correctSet].map(x => x.toUpperCase()).join(', ')}`;
+        }
+    }
 };
 
 const matchColors = [
@@ -1566,6 +1759,9 @@ function isQuestionAnswered(index) {
     if (q.type === 'matching') {
         return ans && Object.keys(ans).length === q.pairs.length;
     }
+    if (q.type === 'multiple_select') {
+        return Array.isArray(ans) && ans.length > 0;
+    }
     return ans !== undefined;
 }
 
@@ -1628,7 +1824,10 @@ function formatTimeToken(seconds) {
 
 // ===== MODAL =====
 function showConfirmModal() {
-    const answered = Object.keys(state.answers).length;
+    let answered = 0;
+    for (let i = 0; i < state.questionCount; i++) {
+        if (isQuestionAnswered(i)) answered++;
+    }
     const unanswered = state.questionCount - answered;
     const flaggedCount = state.flags.size;
 
@@ -1698,7 +1897,7 @@ function updateReviewPanel() {
     DOM.quiz.reviewGrid.innerHTML = '';
 
     for (let i = 0; i < state.questionCount; i++) {
-        const isAnswered = state.answers[i] !== undefined;
+        const isAnswered = isQuestionAnswered(i);
         const isFlagged = state.flags.has(i);
 
         let bgClass = isAnswered
@@ -1882,6 +2081,96 @@ function evaluateResults() {
                             </div>
                             <div class="font-medium text-slate-800 dark:text-slate-100 mb-2">${replaceLinksToImages(q.text)}</div>
                             ${pairsReviewHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else if (q.type === 'multiple_select') {
+            const userAnsList = Array.isArray(userAnswer) ? userAnswer : (userAnswer ? [userAnswer] : []);
+            const correctList = Array.isArray(q.correct) ? q.correct : [q.correct];
+            const correctSet = new Set(correctList);
+            const userSet = new Set(userAnsList);
+
+            let correctChosen = 0;
+            let wrongChosen = 0;
+
+            userAnsList.forEach(ans => {
+                if (correctSet.has(ans)) correctChosen++;
+                else wrongChosen++;
+            });
+
+            // Score calculation: (correctChosen - wrongChosen) / totalCorrect, clamped to [0, 1]
+            const rawScore = correctSet.size > 0 ? (correctChosen - wrongChosen) / correctSet.size : 0;
+            points = Math.max(0, Math.min(1, rawScore));
+            isCorrect = (correctChosen === correctSet.size && wrongChosen === 0);
+            correct += points;
+
+            const itemStatus = isCorrect ? 'correct' : (points > 0 ? 'partial' : 'incorrect');
+            const statusColor = isCorrect ? 'text-green-500 dark:text-green-400' : (points > 0 ? 'text-amber-500 dark:text-amber-400' : 'text-red-500 dark:text-red-400');
+            const icon = isCorrect ? 'ph-check-circle' : (points > 0 ? 'ph-warning-circle' : 'ph-x-circle');
+            const border = isCorrect ? 'border-green-100 dark:border-green-900/50 bg-green-50/30 dark:bg-green-900/10' : (points > 0 ? 'border-amber-100 dark:border-amber-900/50 bg-amber-50/30 dark:bg-amber-900/10' : 'border-red-100 dark:border-red-900/50 bg-red-50/30 dark:bg-red-900/10');
+
+            let optionsBreakdownHtml = `<div class="mt-3 space-y-2">`;
+            q.options.forEach(opt => {
+                const optId = opt.id;
+                const wasChosen = userSet.has(optId);
+                const isRightOpt = correctSet.has(optId);
+
+                let badge = '';
+                let rowBg = 'bg-white/60 dark:bg-slate-800/60 border-slate-100 dark:border-slate-700/50';
+
+                if (wasChosen && isRightOpt) {
+                    badge = `<span class="text-xs font-semibold px-2 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300 ml-auto flex items-center gap-1 shrink-0"><i class="ph-bold ph-check"></i> Chọn đúng</span>`;
+                    rowBg = 'bg-green-50/60 dark:bg-green-900/20 border-green-200 dark:border-green-800/40';
+                } else if (wasChosen && !isRightOpt) {
+                    badge = `<span class="text-xs font-semibold px-2 py-0.5 rounded bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300 ml-auto flex items-center gap-1 shrink-0"><i class="ph-bold ph-x"></i> Chọn sai</span>`;
+                    rowBg = 'bg-red-50/60 dark:bg-red-900/20 border-red-200 dark:border-red-800/40';
+                } else if (!wasChosen && isRightOpt) {
+                    badge = `<span class="text-xs font-semibold px-2 py-0.5 rounded bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 ml-auto flex items-center gap-1 shrink-0"><i class="ph-bold ph-warning"></i> Bỏ sót</span>`;
+                    rowBg = 'bg-amber-50/40 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800/30';
+                }
+
+                optionsBreakdownHtml += `
+                    <div class="flex items-center gap-2 p-2.5 rounded-lg border text-sm ${rowBg}">
+                        <span class="w-6 h-6 rounded font-bold text-xs flex items-center justify-center uppercase shrink-0 ${isRightOpt ? 'bg-green-500 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'}">
+                            ${optId}
+                        </span>
+                        <span class="text-slate-700 dark:text-slate-200 flex-grow font-medium">${replaceLinksToImages(opt.text)}</span>
+                        ${badge}
+                    </div>
+                `;
+            });
+            optionsBreakdownHtml += `</div>`;
+
+            let explanationHtml = '';
+            if (q.explanation && q.theory) {
+                explanationHtml = `
+                    <div class="mt-4 pt-4 border-t border-slate-200/60 dark:border-slate-700/60">
+                        <div class="flex items-start gap-2 mb-2">
+                            <div class="mt-0.5 text-blue-500 dark:text-blue-400"><i class="ph fill ph-info"></i></div>
+                            <div>
+                                <div class="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-1">${q.theory}</div>
+                                <div class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">${q.explanation}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            qReviewHtml = `
+                <div class="review-item p-4 md:p-5 rounded-xl border ${border} mb-4 shadow-sm transition-all hover:bg-slate-50/50 dark:hover:bg-slate-800/50" data-status="${itemStatus}">
+                    <div class="flex gap-4">
+                        <div class="mt-1 ${statusColor}">
+                            <i class="ph fill ${icon} text-2xl"></i>
+                        </div>
+                        <div class="flex-grow min-w-0">
+                            <div class="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1 flex justify-between items-center">
+                                <span>Question ${index + 1} <span class="text-xs font-normal px-2 py-0.5 rounded bg-purple-50 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/40 ml-1">Chọn nhiều đáp án</span></span>
+                                <span class="${statusColor} font-bold">${points === 1 || points === 0 ? points : points.toFixed(2)} pts</span>
+                            </div>
+                            <div class="font-medium text-slate-800 dark:text-slate-100 mb-2">${replaceLinksToImages(q.text)}</div>
+                            ${optionsBreakdownHtml}
+                            ${explanationHtml}
                         </div>
                     </div>
                 </div>
@@ -2107,6 +2396,7 @@ function resetToHome() {
     state.questionCount = null;
     state.isTestActive = false;
     state.isCheat = false;
+    state.learningModeLocked = {};
     DOM.quiz.progressBar.style.width = `0%`; // Reset progress bar
 
     // Refresh PB and History UI on Home
